@@ -1,0 +1,1795 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iuri Santalucia | Developer & Cybersecurity Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #060610;
+            --bg-secondary: #0c0c1a;
+            --bg-card: #111128;
+            --bg-card-hover: #16163a;
+            --accent-cyber: #00ff88;
+            --accent-blue: #00b4d8;
+            --accent-purple: #7b2ff7;
+            --accent-red: #ff3860;
+            --accent-orange: #ff6b35;
+            --accent-yellow: #ffd166;
+            --accent-pink: #f72585;
+            --text-primary: #e8e8f0;
+            --text-secondary: #7a7f9d;
+            --border-color: #1e1e3a;
+            --glass: rgba(17,17,40,0.7);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+        /* CANVAS */
+        #matrix-canvas {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0; opacity: 0.04; pointer-events: none;
+        }
+        /* AMBIENT GRADIENT BLOBS */
+        .ambient-blob {
+            position: fixed; border-radius: 50%;
+            filter: blur(120px); pointer-events: none; z-index: 0;
+        }
+        .blob-1 { width: 600px; height: 600px; top: -200px; left: -200px; background: rgba(0,255,136,0.07); }
+        .blob-2 { width: 500px; height: 500px; bottom: -150px; right: -150px; background: rgba(123,47,247,0.07); }
+        .blob-3 { width: 400px; height: 400px; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(0,180,216,0.04); }
+        /* NAV */
+        .navbar {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            padding: 0.8rem 2rem;
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            background: rgba(6,6,16,0.75);
+            border-bottom: 1px solid rgba(30,30,58,0.5);
+            display: flex; justify-content: space-between; align-items: center;
+            transition: all 0.3s;
+        }
+        .nav-logo {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.3rem; font-weight: 700;
+            color: var(--accent-cyber); text-decoration: none;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .nav-logo .blink { animation: blink 1s infinite; }
+        @keyframes blink { 0%,50%{opacity:1} 51%,100%{opacity:0} }
+        .nav-links { display: flex; gap: 1.8rem; list-style: none; }
+        .nav-links a {
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 0.85rem; font-weight: 500; transition: all 0.3s;
+            position: relative; padding: 4px 0;
+        }
+        .nav-links a:hover { color: var(--accent-cyber); }
+        .nav-links a::after {
+            content: ''; position: absolute; bottom: -2px; left: 0;
+            width: 0; height: 2px; background: var(--accent-cyber);
+            transition: width 0.3s;
+        }
+        .nav-links a:hover::after { width: 100%; }
+        .nav-links a.active { color: var(--accent-cyber); }
+        .nav-links a.active::after { width: 100%; }
+        .mobile-toggle { display: none; background: none; border: none; color: var(--text-primary); font-size: 1.4rem; cursor: pointer; }
+        /* HERO */
+        .hero {
+            position: relative; z-index: 1;
+            min-height: 100vh; display: flex; align-items: center;
+            justify-content: center; text-align: center; padding: 2rem;
+        }
+        .hero-content { max-width: 900px; }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 8px 20px; border: 1px solid rgba(0,255,136,0.3);
+            border-radius: 50px; font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem; color: var(--accent-cyber);
+            margin-bottom: 2rem; animation: fadeInUp 0.8s ease;
+            background: rgba(0,255,136,0.05);
+        }
+        .hero-badge .dot {
+            width: 8px; height: 8px; background: var(--accent-cyber);
+            border-radius: 50%; animation: pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot {
+            0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,255,136,0.4)}
+            50%{opacity:0.8;box-shadow:0 0 0 12px rgba(0,255,136,0)}
+        }
+        .hero h1 {
+            font-size: 3.8rem; font-weight: 900; line-height: 1.1;
+            margin-bottom: 1.5rem; animation: fadeInUp 0.8s ease 0.2s both;
+        }
+        .hero h1 .gradient-text {
+            background: linear-gradient(135deg, var(--accent-cyber), var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .hero p {
+            font-size: 1.15rem; color: var(--text-secondary);
+            max-width: 600px; margin: 0 auto 2.5rem; line-height: 1.7;
+            animation: fadeInUp 0.8s ease 0.4s both;
+        }
+        .hero-buttons {
+            display: flex; gap: 1rem; justify-content: center;
+            animation: fadeInUp 0.8s ease 0.6s both;
+        }
+        .btn {
+            padding: 14px 32px; border-radius: 10px; font-weight: 600;
+            font-size: 0.95rem; text-decoration: none; transition: all 0.3s;
+            cursor: pointer; border: none; display: inline-flex;
+            align-items: center; gap: 8px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-cyber), #00cc6a);
+            color: #000; box-shadow: 0 4px 20px rgba(0,255,136,0.2);
+        }
+        .btn-primary:hover {
+            box-shadow: 0 6px 35px rgba(0,255,136,0.35);
+            transform: translateY(-3px);
+        }
+        .btn-outline {
+            border: 1px solid var(--border-color);
+            background: rgba(255,255,255,0.03); color: var(--text-primary);
+        }
+        .btn-outline:hover {
+            border-color: var(--accent-cyber); color: var(--accent-cyber);
+            transform: translateY(-3px); background: rgba(0,255,136,0.05);
+        }
+        @keyframes fadeInUp {
+            from{opacity:0;transform:translateY(30px)}
+            to{opacity:1;transform:translateY(0)}
+        }
+        .typing-text {
+            display: inline; border-right: 2px solid var(--accent-cyber);
+            animation: typing-cursor 0.8s infinite;
+        }
+        @keyframes typing-cursor {
+            0%,50%{border-color:var(--accent-cyber)} 51%,100%{border-color:transparent}
+        }
+        /* STATS */
+        .stats-bar {
+            position: relative; z-index: 1; display: flex;
+            justify-content: center; gap: 3rem; padding: 3rem 2rem;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+        }
+        .stat-item { text-align: center; }
+        .stat-number {
+            font-size: 2.4rem; font-weight: 900;
+            font-family: 'JetBrains Mono', monospace;
+            background: linear-gradient(135deg, var(--accent-cyber), var(--accent-blue));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .stat-label { font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+        /* SECTIONS */
+        .section {
+            position: relative; z-index: 1;
+            padding: 6rem 2rem; max-width: 1200px; margin: 0 auto;
+        }
+        .section-header { text-align: center; margin-bottom: 4rem; }
+        .section-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem; color: var(--accent-cyber);
+            text-transform: uppercase; letter-spacing: 3px; margin-bottom: 1rem;
+        }
+        .section-title { font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem; }
+        .section-desc { color: var(--text-secondary); max-width: 600px; margin: 0 auto; line-height: 1.7; }
+        /* PROJECT CARDS */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+        .project-card {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 20px; padding: 2rem;
+            transition: all 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+            position: relative; overflow: hidden; cursor: pointer;
+        }
+        .project-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--card-accent, var(--accent-cyber)), transparent);
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .project-card:hover::before { opacity: 1; }
+        .project-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(255,255,255,0.1);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 40px rgba(var(--card-accent-rgb, 0,255,136),0.08);
+            background: var(--bg-card-hover);
+        }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
+        .card-icon {
+            width: 52px; height: 52px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
+        }
+        .card-links { display: flex; gap: 12px; }
+        .card-links a { color: var(--text-secondary); font-size: 1.1rem; transition: color 0.3s; }
+        .card-links a:hover { color: var(--accent-cyber); }
+        .card-badge {
+            display: inline-block; padding: 4px 12px; border-radius: 50px;
+            font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+            margin-bottom: 0.8rem;
+        }
+        .project-card h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.6rem; }
+        .project-card p { color: var(--text-secondary); font-size: 0.88rem; line-height: 1.7; margin-bottom: 1.2rem; }
+        .tech-stack { display: flex; flex-wrap: wrap; gap: 6px; }
+        .tech-tag {
+            padding: 4px 10px; border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;
+            background: rgba(255,255,255,0.04); color: var(--text-secondary);
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .demo-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            margin-top: 1rem; padding: 8px 18px; border-radius: 8px;
+            background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3);
+            color: var(--accent-cyber); font-size: 0.8rem; font-weight: 600;
+            cursor: pointer; transition: all 0.3s;
+        }
+        .demo-btn:hover { background: rgba(0,255,136,0.2); transform: translateY(-1px); }
+        /* FEATURED */
+        .featured-project {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 24px; padding: 3rem; margin-bottom: 3rem;
+            position: relative; overflow: hidden;
+        }
+        .featured-project::after {
+            content: ''; position: absolute; top: -50%; right: -20%;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(0,255,136,0.06) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .featured-label {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 14px; background: rgba(0,255,136,0.08);
+            border: 1px solid rgba(0,255,136,0.2); border-radius: 50px;
+            font-size: 0.72rem; color: var(--accent-cyber); font-weight: 700;
+            margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .featured-project h2 { font-size: 2rem; margin-bottom: 1rem; }
+        .featured-project > p { color: var(--text-secondary); line-height: 1.8; max-width: 700px; margin-bottom: 2rem; }
+        .feature-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 0.8rem; margin-bottom: 2rem; }
+        .feature-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 14px; background: rgba(255,255,255,0.02);
+            border-radius: 10px; font-size: 0.88rem; border: 1px solid rgba(255,255,255,0.03);
+        }
+        .feature-item i { color: var(--accent-cyber); }
+        /* MODAL OVERLAY */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(6,6,16,0.92); backdrop-filter: blur(10px);
+            z-index: 2000; display: none; align-items: center; justify-content: center;
+            padding: 2rem;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 20px; width: 100%; max-width: 900px; max-height: 90vh;
+            overflow-y: auto; position: relative;
+        }
+        .modal-close {
+            position: absolute; top: 16px; right: 16px; z-index: 10;
+            width: 40px; height: 40px; border-radius: 10px;
+            background: rgba(255,255,255,0.05); border: 1px solid var(--border-color);
+            color: var(--text-secondary); font-size: 1.2rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s;
+        }
+        .modal-close:hover { background: rgba(255,56,96,0.15); color: var(--accent-red); border-color: var(--accent-red); }
+        .modal-body { padding: 2.5rem; }
+        .modal-body h2 { font-size: 1.6rem; margin-bottom: 0.5rem; }
+        .modal-body .modal-desc { color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem; }
+        /* SKILLS */
+        .skills-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem;
+        }
+        .skill-card {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: 18px; padding: 2rem; text-align: center; transition: all 0.3s;
+        }
+        .skill-card:hover { transform: translateY(-5px); border-color: rgba(123,47,247,0.3); background: var(--bg-card-hover); }
+        .skills-category { margin-bottom: 1.2rem; }
+        .skills-cat-title {
+            font-size: 1.1rem; font-weight: 700; color: var(--accent-cyber);
+            display: flex; align-items: center; gap: 10px;
+            padding-bottom: 0.6rem; border-bottom: 1px solid rgba(0,255,136,0.15);
+            font-family: 'JetBrains Mono', monospace; letter-spacing: 0.5px;
+        }
+        .skills-cat-title i { font-size: 1rem; opacity: 0.8; }
+        .skill-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+        .skill-card h3 { font-size: 1.05rem; margin-bottom: 0.4rem; }
+        .skill-card p { color: var(--text-secondary); font-size: 0.83rem; line-height: 1.6; }
+        .skill-bar-container { margin-top: 1rem; background: rgba(255,255,255,0.04); border-radius: 10px; height: 5px; overflow: hidden; }
+        .skill-bar { height: 100%; border-radius: 10px; background: linear-gradient(90deg, var(--accent-cyber), var(--accent-blue)); width: 0; transition: width 1.5s ease; }
+        /* TERMINAL */
+        .terminal {
+            background: #0d0d1a; border: 1px solid var(--border-color);
+            border-radius: 16px; overflow: hidden; margin: 3rem 0;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .terminal-header {
+            display: flex; align-items: center; gap: 8px;
+            padding: 12px 16px; background: #08081a;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .terminal-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .terminal-body {
+            padding: 1.5rem; font-size: 0.82rem; line-height: 2;
+            max-height: 450px; overflow-y: auto;
+        }
+        .terminal-body .prompt { color: var(--accent-cyber); }
+        .terminal-body .command { color: #cdd6f4; }
+        .terminal-body .output { color: var(--text-secondary); }
+        .terminal-body .success { color: var(--accent-cyber); }
+        .terminal-body .warning { color: var(--accent-yellow); }
+        .terminal-body .error { color: var(--accent-red); }
+        /* DEMO SPECIFIC STYLES */
+        /* SIEM Dashboard */
+        .siem-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+        .siem-stat {
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 1rem; text-align: center;
+        }
+        .siem-stat .value { font-size: 1.8rem; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
+        .siem-stat .label { font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+        .siem-chart { background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
+        .siem-chart canvas { width: 100% !important; height: 200px !important; }
+        .siem-log { background: #0a0a14; border-radius: 10px; padding: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; max-height: 200px; overflow-y: auto; }
+        .log-entry { padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.03); display: flex; gap: 10px; }
+        .log-time { color: var(--text-secondary); white-space: nowrap; }
+        .log-severity { padding: 1px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 700; }
+        .log-critical { background: rgba(255,56,96,0.2); color: var(--accent-red); }
+        .log-warning { background: rgba(255,209,102,0.2); color: var(--accent-yellow); }
+        .log-info { background: rgba(0,180,216,0.2); color: var(--accent-blue); }
+        .log-msg { color: var(--text-primary); }
+        /* Recon Scanner */
+        .recon-output { background: #0a0a14; border-radius: 12px; padding: 1.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; }
+        .recon-output .scan-line { opacity: 0; transition: opacity 0.3s; margin: 4px 0; }
+        .recon-output .scan-line.visible { opacity: 1; }
+        .scan-btn {
+            padding: 12px 28px; border-radius: 10px; border: none;
+            background: linear-gradient(135deg, var(--accent-red), #cc2040);
+            color: #fff; font-weight: 700; font-size: 0.9rem;
+            cursor: pointer; transition: all 0.3s; margin-bottom: 1.5rem;
+        }
+        .scan-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255,56,96,0.3); }
+        .scan-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .scan-input {
+            width: 100%; padding: 12px 16px; border-radius: 10px;
+            border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);
+            color: var(--text-primary); font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem; margin-bottom: 1rem; outline: none;
+        }
+        .scan-input:focus { border-color: var(--accent-red); }
+        /* VaultCrypt */
+        .vault-area { display: flex; flex-direction: column; gap: 1rem; }
+        .vault-input, .vault-output {
+            width: 100%; padding: 12px 16px; border-radius: 10px;
+            border: 1px solid var(--border-color); background: rgba(255,255,255,0.03);
+            color: var(--text-primary); font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem; resize: vertical; min-height: 80px; outline: none;
+        }
+        .vault-input:focus, .vault-output:focus { border-color: var(--accent-purple); }
+        .vault-btns { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+        .vault-btn {
+            padding: 10px 22px; border-radius: 10px; border: none;
+            font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.3s;
+        }
+        .vault-encrypt { background: linear-gradient(135deg, var(--accent-purple), #5a1fd4); color: #fff; }
+        .vault-decrypt { background: rgba(0,255,136,0.15); border: 1px solid rgba(0,255,136,0.3); color: var(--accent-cyber); }
+        .vault-btn:hover { transform: translateY(-2px); }
+        /* CyberRunner Game */
+        #game-canvas { width: 100%; border-radius: 12px; background: #000; display: block; }
+        .game-ui { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .game-score { font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; color: var(--accent-cyber); }
+        .game-controls { display: flex; gap: 0.5rem; }
+        .game-btn {
+            padding: 8px 20px; border-radius: 8px; border: 1px solid var(--border-color);
+            background: rgba(255,255,255,0.05); color: var(--text-primary);
+            font-size: 0.8rem; cursor: pointer; transition: all 0.3s;
+        }
+        .game-btn:hover { border-color: var(--accent-cyber); color: var(--accent-cyber); }
+        /* SynthWave */
+        .synth-container { display: flex; flex-direction: column; gap: 1rem; }
+        .synth-keys { display: flex; gap: 3px; justify-content: center; flex-wrap: wrap; }
+        .synth-key {
+            width: 52px; height: 140px; border-radius: 0 0 8px 8px;
+            background: linear-gradient(180deg, #f0f0f0, #d0d0d0); border: 1px solid #999;
+            cursor: pointer; transition: all 0.1s; position: relative;
+        }
+        .synth-key:active, .synth-key.active {
+            background: linear-gradient(180deg, #e0e0e0, #c0c0c0);
+            transform: translateY(2px);
+        }
+        .synth-key.black {
+            width: 36px; height: 90px; margin: 0 -18px; z-index: 2;
+            background: linear-gradient(180deg, #333, #111); border-color: #000;
+        }
+        .synth-key.black:active, .synth-key.black.active {
+            background: linear-gradient(180deg, #444, #222);
+        }
+        .synth-key span {
+            position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+            font-size: 0.6rem; color: #888; font-family: 'JetBrains Mono', monospace;
+        }
+        .synth-key.black span { color: #666; }
+        .synth-controls { display: flex; gap: 1.5rem; align-items: center; justify-content: center; flex-wrap: wrap; }
+        .synth-control { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .synth-control label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; }
+        .synth-control input[type="range"] {
+            -webkit-appearance: none; width: 100px; height: 4px;
+            background: var(--border-color); border-radius: 4px; outline: none;
+        }
+        .synth-control input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 14px; height: 14px;
+            background: var(--accent-cyber); border-radius: 50%; cursor: pointer;
+        }
+        .synth-control select {
+            background: rgba(255,255,255,0.05); border: 1px solid var(--border-color);
+            color: var(--text-primary); padding: 6px 12px; border-radius: 6px;
+            font-size: 0.8rem; outline: none; cursor: pointer;
+        }
+        .synth-visualizer { width: 100%; height: 80px; border-radius: 10px; background: rgba(0,0,0,0.3); }
+        /* PacketPulse */
+        .packet-canvas { width: 100%; height: 300px; border-radius: 12px; background: #050510; }
+        .packet-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; margin-top: 1rem; }
+        .packet-stat {
+            text-align: center; padding: 0.8rem;
+            background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid var(--border-color);
+        }
+        .packet-stat .val { font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; font-weight: 700; }
+        .packet-stat .lbl { font-size: 0.7rem; color: var(--text-secondary); margin-top: 2px; }
+        /* CONTACT */
+        .contact-section {
+            text-align: center; padding: 6rem 2rem;
+            position: relative; z-index: 1;
+        }
+        .contact-section h2 { font-size: 2.5rem; margin-bottom: 1rem; }
+        .contact-section p {
+            color: var(--text-secondary); margin-bottom: 2.5rem;
+            max-width: 500px; margin-left: auto; margin-right: auto;
+        }
+        .social-links { display: flex; justify-content: center; gap: 1rem; margin-top: 2rem; }
+        .social-link {
+            width: 48px; height: 48px; border-radius: 14px;
+            border: 1px solid var(--border-color); display: flex;
+            align-items: center; justify-content: center;
+            color: var(--text-secondary); font-size: 1.1rem;
+            transition: all 0.3s; text-decoration: none;
+            background: rgba(255,255,255,0.02);
+        }
+        .social-link:hover {
+            border-color: var(--accent-cyber); color: var(--accent-cyber);
+            transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,255,136,0.1);
+        }
+        footer {
+            text-align: center; padding: 2rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary); font-size: 0.78rem;
+            position: relative; z-index: 1;
+        }
+        /* ANIMATIONS */
+        .reveal { opacity: 0; transform: translateY(40px); transition: all 0.8s cubic-bezier(0.16,1,0.3,1); }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-cyber); }
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.3rem; }
+            .stats-bar { flex-wrap: wrap; gap: 1.5rem; }
+            .projects-grid { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
+            .nav-links.open {
+                display: flex; flex-direction: column;
+                position: absolute; top: 100%; left: 0; right: 0;
+                background: rgba(6,6,16,0.95); padding: 1rem 2rem;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .mobile-toggle { display: block; }
+            .featured-project { padding: 1.5rem; }
+            .siem-grid { grid-template-columns: repeat(2, 1fr); }
+            .synth-key { width: 40px; height: 110px; }
+            .synth-key.black { width: 28px; height: 70px; margin: 0 -14px; }
+        }
+    </style>
+</head>
+<body>
+<canvas id="matrix-canvas"></canvas>
+<div class="ambient-blob blob-1"></div>
+<div class="ambient-blob blob-2"></div>
+<div class="ambient-blob blob-3"></div>
+<!-- NAV -->
+<nav class="navbar">
+    <a href="#" class="nav-logo"><i class="fas fa-terminal"></i> iuri@dev<span class="blink">_</span></a>
+    <button class="mobile-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')"><i class="fas fa-bars"></i></button>
+    <ul class="nav-links">
+        <li><a href="#featured" data-nav>Destaque</a></li>
+        <li><a href="#projects" data-nav>Projetos</a></li>
+        <li><a href="#skills" data-nav>Skills</a></li>
+        <li><a href="#terminal" data-nav>Terminal</a></li>
+        <li><a href="#contact" data-nav>Contato</a></li>
+    </ul>
+</nav>
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-badge"><span class="dot"></span> Disponivel para novos projetos</div>
+        <h1>Ola, sou <span class="gradient-text">Iuri Santalucia</span><br><span id="typed-role" class="typing-text"></span></h1>
+        <p>Unified Workforce Engineer @ Syngenta | Full-Stack Developer | Cybersecurity Enthusiast</p>
+        <div class="hero-buttons">
+            <a href="#projects" class="btn btn-primary"><i class="fas fa-rocket"></i> Ver Projetos</a>
+            <a href="https://github.com/IuriSantalucia" target="_blank" class="btn btn-outline"><i class="fab fa-github"></i> GitHub</a>
+        </div>
+    </div>
+</section>
+<!-- STATS -->
+<div class="stats-bar">
+    <div class="stat-item"><div class="stat-number" data-target="8">0</div><div class="stat-label">Projetos</div></div>
+    <div class="stat-item"><div class="stat-number" data-target="6">0</div><div class="stat-label">Demos Interativas</div></div>
+    <div class="stat-item"><div class="stat-number" data-target="24">0</div><div class="stat-label">Tecnologias</div></div>
+    <div class="stat-item"><div class="stat-number" data-target="1500">0</div><div class="stat-label">Commits</div></div>
+</div>
+<!-- FEATURED: SIEM -->
+<section class="section" id="featured">
+    <div class="featured-project reveal">
+        <div class="featured-label"><i class="fas fa-star"></i> PROJETO DESTAQUE</div>
+        <h2>SentinelGuard — SIEM Dashboard</h2>
+        <p>Plataforma de monitoramento de seguranca em tempo real com deteccao de anomalias, analise de logs e alertas inteligentes.</p>
+        <div class="feature-list">
+            <div class="feature-item"><i class="fas fa-check-circle"></i> Monitoramento em tempo real</div>
+            <div class="feature-item"><i class="fas fa-check-circle"></i> Deteccao de anomalias</div>
+            <div class="feature-item"><i class="fas fa-check-circle"></i> Dashboard interativo</div>
+            <div class="feature-item"><i class="fas fa-check-circle"></i> Log stream ao vivo</div>
+            <div class="feature-item"><i class="fas fa-check-circle"></i> Alertas por severidade</div>
+            <div class="feature-item"><i class="fas fa-check-circle"></i> Metricas em tempo real</div>
+        </div>
+        <div class="tech-stack" style="margin-bottom:1.5rem;">
+            <span class="tech-tag">Python</span><span class="tech-tag">React</span>
+            <span class="tech-tag">Elasticsearch</span><span class="tech-tag">WebSocket</span>
+            <span class="tech-tag">Docker</span><span class="tech-tag">Redis</span>
+        </div>
+        <button class="demo-btn" onclick="openModal('siem')"><i class="fas fa-play"></i> Abrir Demo Interativa</button>
+    </div>
+</section>
+<!-- PROJECTS -->
+<section class="section" id="projects">
+    <div class="section-header reveal">
+        <div class="section-tag">// projetos funcionais</div>
+        <h2 class="section-title">Projetos & Demos</h2>
+        <p class="section-desc">Cada projeto abaixo tem uma demo interativa funcional. Clique para experimentar.</p>
+    </div>
+    <div class="projects-grid">
+        <!-- PhantomRecon -->
+        <div class="project-card reveal" style="--card-accent: #ff3860;">
+            <div class="card-header">
+                <div class="card-icon" style="background:rgba(255,56,96,0.1);color:#ff3860;"><i class="fas fa-spider"></i></div>
+                <div class="card-links"><a href="#"><i class="fab fa-github"></i></a></div>
+            </div>
+            <span class="card-badge" style="background:rgba(255,56,96,0.1);color:#ff3860;">OFFENSIVE</span>
+            <h3>PhantomRecon</h3>
+            <p>Scanner de reconhecimento automatizado para pentest. Enumera subdominios, ports, tecnologias web e busca vulnerabilidades.</p>
+            <div class="tech-stack">
+                <span class="tech-tag">Python</span><span class="tech-tag">Nmap</span>
+                <span class="tech-tag">Shodan API</span><span class="tech-tag">SQLite</span>
+            </div>
+            <button class="demo-btn" onclick="openModal('recon')"><i class="fas fa-play"></i> Simular Scan</button>
+        </div>
+        <!-- VaultCrypt -->
+        <div class="project-card reveal" style="--card-accent: #7b2ff7;">
+            <div class="card-header">
+                <div class="card-icon" style="background:rgba(123,47,247,0.1);color:#7b2ff7;"><i class="fas fa-lock"></i></div>
+                <div class="card-links"><a href="#"><i class="fab fa-github"></i></a></div>
+            </div>
+            <span class="card-badge" style="background:rgba(123,47,247,0.1);color:#7b2ff7;">CRYPTO</span>
+            <h3>VaultCrypt</h3>
+            <p>Criptografia AES-256-GCM real no browser usando Web Crypto API. Encripte e decripte textos com senha.</p>
+            <div class="tech-stack">
+                <span class="tech-tag">Web Crypto API</span><span class="tech-tag">AES-256</span>
+                <span class="tech-tag">PBKDF2</span><span class="tech-tag">JavaScript</span>
+            </div>
+            <button class="demo-btn" onclick="openModal('vault')"><i class="fas fa-play"></i> Testar Criptografia</button>
+        </div>
+        <!-- PacketPulse -->
+        <div class="project-card reveal" style="--card-accent: #00b4d8;">
+            <div class="card-header">
+                <div class="card-icon" style="background:rgba(0,180,216,0.1);color:#00b4d8;"><i class="fas fa-network-wired"></i></div>
+                <div class="card-links"><a href="#"><i class="fab fa-github"></i></a></div>
+            </div>
+            <span class="card-badge" style="background:rgba(0,180,216,0.1);color:#00b4d8;">NETWORK</span>
+            <h3>PacketPulse</h3>
+            <p>Visualizador de trafego de rede em tempo real. Animacao de pacotes, protocolos e deteccao de anomalias.</p>
+            <div class="tech-stack">
+                <span class="tech-tag">Canvas</span><span class="tech-tag">WebSocket</span>
+                <span class="tech-tag">Go</span><span class="tech-tag">libpcap</span>
+            </div>
+            <button class="demo-btn" onclick="openModal('packet')"><i class="fas fa-play"></i> Ver Rede ao Vivo</button>
+        </div>
+        <!-- CyberRunner -->
+        <div class="project-card reveal" style="--card-accent: #ffd166;">
+            <div class="card-header">
+                <div class="card-icon" style="background:rgba(255,209,102,0.1);color:#ffd166;"><i class="fas fa-gamepad"></i></div>
+                <div class="card-links"><a href="#"><i class="fab fa-github"></i></a></div>
+            </div>
+            <span class="card-badge" style="background:rgba(255,209,102,0.1);color:#ffd166;">GAME</span>
+            <h3>CyberRunner 2077</h3>
+            <p>Jogo endless-runner cyberpunk no browser. Desvie dos obstaculos, colete pontos e sobreviva o maximo possivel.</p>
+            <div class="tech-stack">
+                <span class="tech-tag">Canvas</span><span class="tech-tag">JavaScript</span>
+                <span class="tech-tag">Game Loop</span><span class="tech-tag">Procedural</span>
+            </div>
+            <button class="demo-btn" onclick="openModal('game')"><i class="fas fa-play"></i> Jogar Agora</button>
+        </div>
+        <!-- SynthWave -->
+        <div class="project-card reveal" style="--card-accent: #f72585;">
+            <div class="card-header">
+                <div class="card-icon" style="background:rgba(247,37,133,0.1);color:#f72585;"><i class="fas fa-music"></i></div>
+                <div class="card-links"><a href="#"><i class="fab fa-github"></i></a></div>
+            </div>
+            <span class="card-badge" style="background:rgba(247,37,133,0.1);color:#f72585;">CREATIVE</span>
+            <h3>SynthWave Studio</h3>
+            <p>Sintetizador musical funcional no browser com Web Audio API. Toque com teclado, ajuste wave, volume e efeitos.</p>
+            <div class="tech-stack">
+                <span class="tech-tag">Web Audio API</span><span class="tech-tag">Canvas</span>
+                <span class="tech-tag">JavaScript</span><span class="tech-tag">FFT</span>
+            </div>
+            <button class="demo-btn" onclick="openModal('synth')"><i class="fas fa-play"></i> Tocar Sintetizador</button>
+        </div>
+    </div>
+</section>
+<!-- SKILLS -->
+<section class="section" id="skills">
+    <div class="section-header reveal">
+        <div class="section-tag">// tech stack</div>
+        <h2 class="section-title">Skills & Tecnologias</h2>
+        <p class="section-desc">Stack completa — do backend ao mobile, passando por seguranca e infra.</p>
+    </div>
+    <!-- CATEGORIA: LINGUAGENS -->
+    <div class="skills-category reveal">
+        <h3 class="skills-cat-title"><i class="fas fa-code"></i> Linguagens</h3>
+    </div>
+    <div class="skills-grid" style="margin-bottom:3rem;">
+        <div class="skill-card reveal">
+            <div class="skill-icon"><i class="fab fa-python" style="color:#3776AB;font-size:2.5rem;"></i></div>
+            <h3>Python</h3><p>Automacao, scripting, APIs, ML, pentest tools</p>
+            <div class="skill-bar-container"><div class="skill-bar" data-width="95"></div></div>
+        </div>
+        <div class="skill-card reveal">
+            <div class="skill-icon"><i class="fab fa-js-square" style="color:#F7DF1E;font-size:2.5rem;"></i></div>
+            <h3>JavaScript / TypeScript</h3><p>React, Next.js, Node.js, full-stack web</p>
+            <div class="skill-bar-container"><div class="skill-bar" data-width="88"></div></div>
+        </div>
+        <div class="skill-card reveal">
+            <div class="skill-icon"><i class="fab fa-java" style="color:#ED8B00;font-size:2.5rem;"></i></div>
+            <h3>Java</h3><p>Android Studio, Spring Boot, APIs REST, OOP</p>
+            <div class="skill-bar-container"><div class="skill-bar" data-width="85"></div></div>
+        </div>
+        <div class="skill-card reveal">
+            <div class="skill-icon"><i class="fab fa-swift" style="color:#FA7343;font-size:2.5rem;"></i></div>
+            <h3>Swift</h3><p>Xcode, SwiftUI, UIKit, iOS apps nativas</p>
+            <div class="skill-bar-container"><div class="skill-bar" data-width="78"></div></div>
+        </div>
+        <div class="skill-card reveal">
+            <div class="skill-icon" style="font-size:2.2rem;color:#7F52FF;">K</div>
+            <h3>Kotlin</h3><p>Android moderno, Jetpack Compose, coroutines</p>
+            <div class="skill-bar-container"><div class="skill-bar" data-width="80"></div></div>
+        </div>
+        <div class="skill-card reveal">
+            <div class="skill-icon"><i class="fab fa-rust" style="color:#CE422B;font-size:2.5rem;"></i></div>
+            <h3>Rust</h3><p>Performance, memory safety, CLI tools, networking</p>
+            <div class="skill-bar-container"><div class="skill-bar" data-width="72"></div></div>
+        </div>
+        <div class="skill-card reveal">
+            <div class="skill-icon"><i class="fab fa-golang" style="color:#00ADD8;font-size:2.5rem;"></i></div>
+            <h3>Go</h3><p>APIs de alta performance, microservices, concorrencia</p>
+            <div class="skill-bar-container"><div class="skill-bar" data-width="74"></div></div>
+        </div>
+        <div class="skill-card reveal">
+            <div class="skill-icon" style="font-size:2.2rem;color:#00599C;">C++</div>
+            <h3>C / C++</h3><p>Sistemas embarcados, algoritmos, game engines</p>
+            <div class="skill-bar-container"><div class="skill-bar" data-width="70"></div></div>
+        </div>
+        <div class="skill-card reveal">
+            <div class="skill-icon" style="font-size:2.2rem;color:#239120;">C#</div>
+            <h3>C# / .NET</h3><p>APIs REST, Unity, aplicacoes desktop</p>
+            <div class="skill-bar-container"><div class="skill-bar" data-width="68"></div></div>
+        </div>
+        <div class="skill-card reveal">
+            <div class="skill-icon"><i class="fab fa-php" style="color:#777BB4;font-size:2.5rem;"></i></div>
+            <h3>PHP</h3><p>Laravel, WordPress, APIs, backend web</p>
+            <div class="skill-bar-container"><div class="skill-bar" data-width="65"></div></div>
+        </div>
+        <div class="skill-card reveal">
+            <div class="skill-icon" style="font-size:2.2rem;color:#CC342D;"><i class="fas fa-gem" style="color:#CC342D;font-size:2.2rem;"></i></div>
+            <h3>Ruby</h3><p>Rails, scripting, automacao, prototyping rapido</p>
+            <div class="skill-bar-container"><div class="skill-bar" data-width="62"></div></div>
+        </div>
+        <div class="skill-card reveal">
+            <div class="skill-icon" style="font-size:2.2rem;color:#02569B;"><i class="fas fa-feather" style="color:#02569B;font-size:2.2rem;"></i></div>
+            <h3>Dart / Flutter</h3><p>Apps cross-platform, UI responsiva, Material Design</p>
+            <div class="skill-bar-container"><div class="skill-bar" data-width="68"></div></div>
+        </div>
+    </div>
+    <!-- CATEGORIA: MOBILE -->
+    <div class="skills-category reveal">
+        <h3 class="skills-cat-title"><i class="fas fa-mobile-alt"></i> Mobile Development</h3>
+    </div>
+    <div class="skills-grid" style="margin-bottom:3rem;">
+        <div class="skill-card reveal" style="border-color:rgba(237,139,0,0.2);">
+            <div class="skill-icon"><i class="fab fa-android" style="color:#3DDC84;font-size:2.5rem;"></i></div>
+            <h3>Android — Java</h3><p>Android Studio, Activities, Fragments, Retrofit, Room DB, Material Design</p>
+            <div class="skill-bar-container"><div class="skill-bar" data-width="85" style="background:linear-gradient(90deg,#3DDC84,#00C853);"></div></div>
+        </div>
+        <div class="skill-card reveal" style="border-color:rgba(250,115,67,0.2);">
+            <div class="skill-icon"><i class="fab fa-apple" style="color:#999;font-size:2.5rem;"></i></div>
+            <h3>iOS — Swift</h3><p>Xcode, SwiftUI, UIKit, CoreData, Combine, App Store deployment</p>
+            <div class="skill-bar-container"><div class="skill-bar" data-width="78" style="background:linear-gradient(90deg,#FA7343,#FF9500);"></div></div>
+        </div>
+        <div class="skill-card reveal" style="border-color:rgba(2,86,157,0.2);">
+            <div class="skill-icon"><i class="fas fa-feather" style="color:#02569B;font-size:2.2rem;"></i></div>
+            <h3>Flutter — Dart</h3><p>Cross-platform, widgets customizados, animacoes, Firebase</p>
+            <div class="skill-bar-container"><div class="skill-bar" data-width="68" style="background:linear-gradient(90deg,#02569B,#40C4FF);"></div></div>
+        </div>
+    </div>
+    <!-- CATEGORIA: INFRA & SECURITY -->
+    <div class="skills-category reveal">
+        <h3 class="skills-cat-title"><i class="fas fa-shield-alt"></i> Infra & Security</h3>
+    </div>
+    <div class="skills-grid" style="margin-bottom:3rem;">
+        <div class="skill-card reveal">
+            <div class="skill-icon"><i class="fab fa-linux" style="color:#FCC624;font-size:2.5rem;"></i></div>
+            <h3>Linux / Bash</h3><p>Sysadmin, shell scripting, hardening, automation</p>
+            <div class="skill-bar-container"><div class="skill-bar" data-width="92"></div></div>
+        </div>
+        <div class="skill-card reveal">
+            <div class="skill-icon"><i class="fab fa-docker" style="color:#2496ED;font-size:2.5rem;"></i></div>
+            <h3>Docker / Kubernetes</h3><p>Containers, orchestration, CI/CD pipelines</p>
+            <div class="skill-bar-container"><div class="skill-bar" data-width="85"></div></div>
+        </div>
+        <div class="skill-card reveal">
+            <div class="skill-icon"><i class="fas fa-user-secret" style="color:#ff3860;font-size:2.2rem;"></i></div>
+            <h3>Cybersecurity</h3><p>Pentest, OSINT, forensics, threat hunting, SIEM</p>
+            <div class="skill-bar-container"><div class="skill-bar" data-width="90"></div></div>
+        </div>
+        <div class="skill-card reveal">
+            <div class="skill-icon"><i class="fas fa-database" style="color:#336791;font-size:2.2rem;"></i></div>
+            <h3>SQL / Databases</h3><p>PostgreSQL, MySQL, SQLite, Redis, Elasticsearch</p>
+            <div class="skill-bar-container"><div class="skill-bar" data-width="88"></div></div>
+        </div>
+        <div class="skill-card reveal">
+            <div class="skill-icon"><i class="fab fa-git-alt" style="color:#F05032;font-size:2.5rem;"></i></div>
+            <h3>Git / CI-CD</h3><p>GitHub Actions, GitLab CI, branching strategies</p>
+            <div class="skill-bar-container"><div class="skill-bar" data-width="90"></div></div>
+        </div>
+        <div class="skill-card reveal">
+            <div class="skill-icon"><i class="fab fa-aws" style="color:#FF9900;font-size:2.5rem;"></i></div>
+            <h3>Cloud / AWS</h3><p>EC2, S3, Lambda, CloudFormation, serverless</p>
+            <div class="skill-bar-container"><div class="skill-bar" data-width="72"></div></div>
+        </div>
+        <div class="skill-card reveal">
+            <div class="skill-icon"><i class="fab fa-microsoft" style="color:#0078D4;font-size:2.5rem;"></i></div>
+            <h3>Azure</h3><p>Azure AD, Virtual Machines, DevOps, Functions, Cloud Infrastructure</p>
+            <div class="skill-bar-container"><div class="skill-bar" data-width="80"></div></div>
+        </div>
+        <div class="skill-card reveal">
+            <div class="skill-icon"><i class="fas fa-headset" style="color:#81B5A1;font-size:2.2rem;"></i></div>
+            <h3>ServiceNow</h3><p>Incident management, workflows, ITSM, automacoes, integrações</p>
+            <div class="skill-bar-container"><div class="skill-bar" data-width="82"></div></div>
+        </div>
+        <div class="skill-card reveal">
+            <div class="skill-icon"><i class="fas fa-robot" style="color:#0066FF;font-size:2.2rem;"></i></div>
+            <h3>Power Automate</h3><p>Fluxos automatizados, RPA, conectores, integrações cloud e desktop</p>
+            <div class="skill-bar-container"><div class="skill-bar" data-width="85"></div></div>
+        </div>
+        <div class="skill-card reveal">
+            <div class="skill-icon"><i class="fas fa-chart-bar" style="color:#F2C811;font-size:2.2rem;"></i></div>
+            <h3>Power BI</h3><p>Dashboards, DAX, data modeling, visualização de dados, relatórios</p>
+            <div class="skill-bar-container"><div class="skill-bar" data-width="78"></div></div>
+        </div>
+    </div>
+</section>
+<!-- TERMINAL -->
+<section class="section" id="terminal">
+    <div class="section-header reveal">
+        <div class="section-tag">// interactive shell</div>
+        <h2 class="section-title">Terminal Interativo</h2>
+    </div>
+    <div class="terminal reveal">
+        <div class="terminal-header">
+            <div class="terminal-dot" style="background:#ff5f57;"></div>
+            <div class="terminal-dot" style="background:#ffbd2e;"></div>
+            <div class="terminal-dot" style="background:#28c840;"></div>
+            <span style="color:var(--text-secondary);font-size:0.78rem;margin-left:10px;">iuri@kali:~/projects</span>
+        </div>
+        <div class="terminal-body" id="terminal-body">
+            <div><span class="prompt">$</span> <span class="command">whoami</span></div>
+            <div class="output">Iuri Santalucia — Unified Workforce Engineer @ Syngenta</div><br>
+            <div><span class="prompt">$</span> <span class="command">cat skills.json | jq '.top'</span></div>
+            <div class="success">["Python", "JavaScript", "Cybersecurity", "Linux", "Docker", "React"]</div><br>
+            <div id="terminal-input-line">
+                <span class="prompt">$</span>
+                <input type="text" id="terminal-input" placeholder="help, python, java, swift, kotlin, rust, go, bash, sql, cpp, csharp..."
+                    style="background:none;border:none;color:#cdd6f4;font-family:'JetBrains Mono',monospace;font-size:0.82rem;outline:none;width:80%;" autocomplete="off">
+            </div>
+        </div>
+    </div>
+</section>
+<!-- CONTACT -->
+<section class="contact-section" id="contact">
+    <div class="reveal">
+        <div class="section-tag">// let's connect</div>
+        <h2>Vamos Construir Algo <span class="gradient-text" style="background:linear-gradient(135deg,var(--accent-cyber),var(--accent-blue),var(--accent-purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Incrivel</span></h2>
+        <p>Sempre aberto para novos projetos, colaboracoes open-source e desafios em cybersecurity.</p>
+        <a href="mailto:iuri.santalucia@syngenta.com" class="btn btn-primary"><i class="fas fa-envelope"></i> Entrar em Contato</a>
+        <div class="social-links">
+            <a href="https://github.com/IuriSantalucia" class="social-link" target="_blank"><i class="fab fa-github"></i></a>
+            <a href="https://www.linkedin.com/in/iuri-santalucia-996491195/" class="social-link" target="_blank"><i class="fab fa-linkedin"></i></a>
+        </div>
+    </div>
+</section>
+<footer><p>Built by <span style="color:var(--accent-cyber);">Iuri Santalucia</span> | 2026</p></footer>
+<!-- ===== MODALS ===== -->
+<!-- SIEM Modal -->
+<div class="modal-overlay" id="modal-siem">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal('siem')"><i class="fas fa-times"></i></button>
+        <div class="modal-body">
+            <h2>SentinelGuard — SIEM Dashboard</h2>
+            <p class="modal-desc">Monitoramento de seguranca em tempo real com logs ao vivo e metricas.</p>
+            <div class="siem-grid" id="siem-stats">
+                <div class="siem-stat"><div class="value" style="color:var(--accent-cyber);" id="siem-events">0</div><div class="label">Events/sec</div></div>
+                <div class="siem-stat"><div class="value" style="color:var(--accent-yellow);" id="siem-alerts">0</div><div class="label">Alerts</div></div>
+                <div class="siem-stat"><div class="value" style="color:var(--accent-red);" id="siem-threats">0</div><div class="label">Threats</div></div>
+                <div class="siem-stat"><div class="value" style="color:var(--accent-blue);" id="siem-uptime">99.97%</div><div class="label">Uptime</div></div>
+            </div>
+            <div class="siem-chart"><canvas id="siem-canvas"></canvas></div>
+            <div class="siem-log" id="siem-log"></div>
+        </div>
+    </div>
+</div>
+<!-- Recon Modal -->
+<div class="modal-overlay" id="modal-recon">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal('recon')"><i class="fas fa-times"></i></button>
+        <div class="modal-body">
+            <h2>PhantomRecon — Scanner</h2>
+            <p class="modal-desc">Simule um scan de reconhecimento em um alvo.</p>
+            <input class="scan-input" id="recon-target" placeholder="Digite um dominio (ex: example.com)" value="target.example.com">
+            <button class="scan-btn" id="recon-btn" onclick="startRecon()"><i class="fas fa-crosshairs"></i> Iniciar Scan</button>
+            <div class="recon-output" id="recon-output"></div>
+        </div>
+    </div>
+</div>
+<!-- Vault Modal -->
+<div class="modal-overlay" id="modal-vault">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal('vault')"><i class="fas fa-times"></i></button>
+        <div class="modal-body">
+            <h2>VaultCrypt — Criptografia AES-256</h2>
+            <p class="modal-desc">Criptografia real usando Web Crypto API (AES-256-GCM + PBKDF2).</p>
+            <div class="vault-area">
+                <textarea class="vault-input" id="vault-text" placeholder="Digite o texto para encriptar..."></textarea>
+                <input class="scan-input" id="vault-pass" type="password" placeholder="Senha de criptografia" style="min-height:auto;">
+                <div class="vault-btns">
+                    <button class="vault-btn vault-encrypt" onclick="vaultEncrypt()"><i class="fas fa-lock"></i> Encriptar</button>
+                    <button class="vault-btn vault-decrypt" onclick="vaultDecrypt()"><i class="fas fa-unlock"></i> Decriptar</button>
+                </div>
+                <textarea class="vault-output" id="vault-result" placeholder="Resultado aparece aqui..." readonly></textarea>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Packet Modal -->
+<div class="modal-overlay" id="modal-packet">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal('packet')"><i class="fas fa-times"></i></button>
+        <div class="modal-body">
+            <h2>PacketPulse — Network Visualizer</h2>
+            <p class="modal-desc">Visualizacao de trafego de rede simulado em tempo real.</p>
+            <canvas class="packet-canvas" id="packet-canvas"></canvas>
+            <div class="packet-stats">
+                <div class="packet-stat"><div class="val" style="color:var(--accent-cyber);" id="pkt-tcp">0</div><div class="lbl">TCP Packets</div></div>
+                <div class="packet-stat"><div class="val" style="color:var(--accent-blue);" id="pkt-udp">0</div><div class="lbl">UDP Packets</div></div>
+                <div class="packet-stat"><div class="val" style="color:var(--accent-red);" id="pkt-alert">0</div><div class="lbl">Anomalies</div></div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Game Modal -->
+<div class="modal-overlay" id="modal-game">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal('game')"><i class="fas fa-times"></i></button>
+        <div class="modal-body">
+            <h2>CyberRunner 2077</h2>
+            <p class="modal-desc">Pressione ESPACO ou clique para pular. Desvie dos obstaculos!</p>
+            <div class="game-ui">
+                <div class="game-score">SCORE: <span id="game-score">0</span></div>
+                <div class="game-controls">
+                    <button class="game-btn" onclick="startGame()"><i class="fas fa-play"></i> Start</button>
+                </div>
+            </div>
+            <canvas id="game-canvas" width="820" height="300"></canvas>
+        </div>
+    </div>
+</div>
+<!-- Synth Modal -->
+<div class="modal-overlay" id="modal-synth">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal('synth')"><i class="fas fa-times"></i></button>
+        <div class="modal-body">
+            <h2>SynthWave Studio</h2>
+            <p class="modal-desc">Toque com o mouse ou teclado (A S D F G H J K = notas). Ajuste o tipo de onda e volume.</p>
+            <div class="synth-container">
+                <canvas class="synth-visualizer" id="synth-viz"></canvas>
+                <div class="synth-controls">
+                    <div class="synth-control">
+                        <label>Wave</label>
+                        <select id="synth-wave">
+                            <option value="sawtooth">Sawtooth</option>
+                            <option value="sine">Sine</option>
+                            <option value="square">Square</option>
+                            <option value="triangle">Triangle</option>
+                        </select>
+                    </div>
+                    <div class="synth-control">
+                        <label>Volume</label>
+                        <input type="range" id="synth-vol" min="0" max="100" value="40">
+                    </div>
+                    <div class="synth-control">
+                        <label>Delay</label>
+                        <input type="range" id="synth-delay" min="0" max="100" value="30">
+                    </div>
+                    <div class="synth-control">
+                        <label>Octave</label>
+                        <select id="synth-octave">
+                            <option value="3">3</option>
+                            <option value="4" selected>4</option>
+                            <option value="5">5</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="synth-keys" id="synth-keys"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+// ===== MATRIX RAIN =====
+const canvas = document.getElementById('matrix-canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+const chars = 'アイウエオカキクケコ0123456789ABCDEF{}[]<>';
+const fontSize = 14;
+const columns = canvas.width / fontSize;
+const drops = Array(Math.floor(columns)).fill(1);
+function drawMatrix() {
+    ctx.fillStyle = 'rgba(6,6,16,0.05)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = '#00ff88'; ctx.font = fontSize+'px monospace';
+    for(let i=0;i<drops.length;i++){
+        const t=chars[Math.floor(Math.random()*chars.length)];
+        ctx.fillText(t,i*fontSize,drops[i]*fontSize);
+        if(drops[i]*fontSize>canvas.height&&Math.random()>0.975)drops[i]=0;
+        drops[i]++;
+    }
+}
+setInterval(drawMatrix,50);
+window.addEventListener('resize',()=>{canvas.width=innerWidth;canvas.height=innerHeight;});
+// ===== TYPING =====
+const roles=['Unified Workforce Engineer','Full-Stack Developer','Cybersecurity Enthusiast','Automation Architect'];
+let ri=0,ci=0,del=false;
+const typed=document.getElementById('typed-role');
+function typeEff(){
+    const c=roles[ri];
+    typed.textContent=del?c.substring(0,ci--):c.substring(0,ci++);
+    let s=del?30:80;
+    if(!del&&ci===c.length+1){s=2000;del=true;}
+    else if(del&&ci===0){del=false;ri=(ri+1)%roles.length;s=500;}
+    setTimeout(typeEff,s);
+}
+typeEff();
+// ===== COUNTERS =====
+function animateCounters(){
+    document.querySelectorAll('.stat-number').forEach(c=>{
+        const t=+c.dataset.target;const inc=t/50;let cur=0;
+        const timer=setInterval(()=>{cur+=inc;if(cur>=t){c.textContent=t>=1000?t.toLocaleString()+'+':t+'+';clearInterval(timer);}else c.textContent=Math.floor(cur);},30);
+    });
+}
+// ===== SCROLL REVEAL =====
+const obs=new IntersectionObserver(e=>{e.forEach(en=>{
+    if(en.isIntersecting){
+        en.target.classList.add('visible');
+        if(en.target.closest('.stats-bar'))animateCounters();
+        const bar=en.target.querySelector('.skill-bar');
+        if(bar)bar.style.width=bar.dataset.width+'%';
+    }
+});},{threshold:0.1});
+document.querySelectorAll('.reveal,.stat-item,.skill-card').forEach(el=>obs.observe(el));
+// ===== NAVBAR: SMOOTH SCROLL + ACTIVE LINK + MOBILE CLOSE =====
+(function(){
+    const navLinks = document.querySelectorAll('.nav-links a[data-nav]');
+    const sections = [];
+    // Coletar todas as sections referenciadas
+    navLinks.forEach(link => {
+        const id = link.getAttribute('href').substring(1);
+        const sec = document.getElementById(id);
+        if(sec) sections.push({ id, el: sec, link });
+    });
+    // Smooth scroll ao clicar
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const id = this.getAttribute('href').substring(1);
+            const target = document.getElementById(id);
+            if(target) {
+                const navH = document.querySelector('.navbar').offsetHeight;
+                const top = target.getBoundingClientRect().top + window.scrollY - navH - 10;
+                window.scrollTo({ top, behavior: 'smooth' });
+            }
+            // Fechar menu mobile
+            document.querySelector('.nav-links').classList.remove('open');
+        });
+    });
+    // Highlight link ativo no scroll
+    function updateActive() {
+        const scrollPos = window.scrollY + 120;
+        let currentId = '';
+        sections.forEach(s => {
+            if(s.el.offsetTop <= scrollPos) currentId = s.id;
+        });
+        navLinks.forEach(link => {
+            link.classList.toggle('active', link.getAttribute('href') === '#' + currentId);
+        });
+        // Shadow na navbar
+        document.querySelector('.navbar').style.boxShadow = scrollY > 50 ? '0 10px 40px rgba(0,0,0,0.4)' : 'none';
+    }
+    window.addEventListener('scroll', updateActive);
+    updateActive();
+    // Logo volta ao topo
+    document.querySelector('.nav-logo').addEventListener('click', function(e) {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        document.querySelector('.nav-links').classList.remove('open');
+    });
+})();
+// ===== MODAL SYSTEM =====
+function openModal(id){document.getElementById('modal-'+id).classList.add('active');document.body.style.overflow='hidden';if(id==='siem')startSIEM();if(id==='packet')startPacket();if(id==='synth')initSynth();if(id==='game')initGameCanvas();}
+function closeModal(id){document.getElementById('modal-'+id).classList.remove('active');document.body.style.overflow='';if(id==='siem')stopSIEM();if(id==='packet')stopPacket();if(id==='game')stopGame();}
+document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m){const id=m.id.replace('modal-','');closeModal(id);}});});
+// ===== SIEM DASHBOARD =====
+let siemInterval, siemLogInterval, siemChartData=[];
+function startSIEM(){
+    const cv=document.getElementById('siem-canvas');
+    cv.width=cv.parentElement.clientWidth-32;cv.height=200;
+    const cx=cv.getContext('2d');
+    siemChartData=Array(60).fill(0).map(()=>Math.random()*80+20);
+    let alerts=0,threats=0;
+    const logEl=document.getElementById('siem-log');logEl.innerHTML='';
+    const severities=['INFO','INFO','INFO','WARNING','WARNING','CRITICAL'];
+    const msgs=[
+        'SSH login attempt from 192.168.1.105','Port scan detected on range 1-1024',
+        'Firewall rule triggered: DROP 10.0.0.55','DNS query to suspicious domain c2.malware.xyz',
+        'Brute force attempt on /admin endpoint','New device joined network: MAC aa:bb:cc:dd:ee:ff',
+        'TLS certificate expiring in 7 days','Unauthorized API access from 203.0.113.42',
+        'Malware signature matched: Trojan.GenericKD','DDoS pattern detected: SYN flood',
+        'User privilege escalation detected','Database query injection attempt blocked'
+    ];
+    siemInterval=setInterval(()=>{
+        const ev=Math.floor(Math.random()*200+50);
+        document.getElementById('siem-events').textContent=ev;
+        alerts+=Math.random()>0.7?1:0;threats+=Math.random()>0.9?1:0;
+        document.getElementById('siem-alerts').textContent=alerts;
+        document.getElementById('siem-threats').textContent=threats;
+        siemChartData.push(ev);siemChartData.shift();
+        cx.clearRect(0,0,cv.width,cv.height);
+        cx.strokeStyle='rgba(0,255,136,0.1)';cx.lineWidth=1;
+        for(let i=0;i<5;i++){const y=i*(cv.height/4);cx.beginPath();cx.moveTo(0,y);cx.lineTo(cv.width,y);cx.stroke();}
+        const grad=cx.createLinearGradient(0,0,0,cv.height);
+        grad.addColorStop(0,'rgba(0,255,136,0.3)');grad.addColorStop(1,'rgba(0,255,136,0)');
+        cx.beginPath();cx.moveTo(0,cv.height);
+        for(let i=0;i<siemChartData.length;i++){
+            const x=(i/(siemChartData.length-1))*cv.width;
+            const y=cv.height-(siemChartData[i]/300)*cv.height;
+            i===0?cx.moveTo(x,y):cx.lineTo(x,y);
+        }
+        const lastX=cv.width;const lastY=cv.height-(siemChartData[siemChartData.length-1]/300)*cv.height;
+        cx.lineTo(lastX,cv.height);cx.closePath();cx.fillStyle=grad;cx.fill();
+        cx.beginPath();
+        for(let i=0;i<siemChartData.length;i++){
+            const x=(i/(siemChartData.length-1))*cv.width;
+            const y=cv.height-(siemChartData[i]/300)*cv.height;
+            i===0?cx.moveTo(x,y):cx.lineTo(x,y);
+        }
+        cx.strokeStyle='#00ff88';cx.lineWidth=2;cx.stroke();
+        cx.beginPath();cx.arc(lastX,lastY,4,0,Math.PI*2);cx.fillStyle='#00ff88';cx.fill();
+    },800);
+    siemLogInterval=setInterval(()=>{
+        const sev=severities[Math.floor(Math.random()*severities.length)];
+        const msg=msgs[Math.floor(Math.random()*msgs.length)];
+        const t=new Date().toLocaleTimeString();
+        const cls=sev==='CRITICAL'?'log-critical':sev==='WARNING'?'log-warning':'log-info';
+        const entry=document.createElement('div');entry.className='log-entry';
+        entry.innerHTML=`<span class="log-time">${t}</span><span class="log-severity ${cls}">${sev}</span><span class="log-msg">${msg}</span>`;
+        logEl.prepend(entry);
+        if(logEl.children.length>50)logEl.removeChild(logEl.lastChild);
+    },1200);
+}
+function stopSIEM(){clearInterval(siemInterval);clearInterval(siemLogInterval);}
+// ===== PHANTOM RECON =====
+function startRecon(){
+    const target=document.getElementById('recon-target').value||'target.example.com';
+    const btn=document.getElementById('recon-btn');
+    const out=document.getElementById('recon-output');
+    btn.disabled=true;out.innerHTML='';
+    const lines=[
+        {t:'prompt',txt:`$ phantomrecon --target ${target} --full-scan`},
+        {t:'output',txt:''},
+        {t:'success',txt:`[*] PhantomRecon v3.2.1 — Starting reconnaissance on ${target}`},
+        {t:'output',txt:'[*] Resolving DNS...'},
+        {t:'success',txt:`[+] IP: ${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`},
+        {t:'output',txt:'[*] Running port scan (top 1000)...'},
+        {t:'success',txt:'[+] PORT   STATE  SERVICE     VERSION'},
+        {t:'success',txt:'[+] 22/tcp  open   ssh         OpenSSH 8.9'},
+        {t:'success',txt:'[+] 80/tcp  open   http        nginx/1.24.0'},
+        {t:'success',txt:'[+] 443/tcp open   https       nginx/1.24.0'},
+        {t:'success',txt:'[+] 3306/tcp open  mysql       MySQL 8.0.35'},
+        {t:'success',txt:'[+] 8080/tcp open  http-proxy  Varnish'},
+        {t:'output',txt:''},
+        {t:'output',txt:'[*] Enumerating subdomains...'},
+        {t:'success',txt:`[+] api.${target}`},
+        {t:'success',txt:`[+] cdn.${target}`},
+        {t:'success',txt:`[+] mail.${target}`},
+        {t:'success',txt:`[+] staging.${target}`},
+        {t:'output',txt:''},
+        {t:'output',txt:'[*] Detecting technologies...'},
+        {t:'success',txt:'[+] nginx, React, Node.js, PostgreSQL, Redis, CloudFlare'},
+        {t:'output',txt:''},
+        {t:'output',txt:'[*] Checking known CVEs...'},
+        {t:'warning',txt:'[!] CVE-2024-1234 — nginx HTTP/2 DoS (Medium)'},
+        {t:'warning',txt:'[!] CVE-2023-5678 — MySQL Auth Bypass (High)'},
+        {t:'output',txt:''},
+        {t:'output',txt:'[*] Checking security headers...'},
+        {t:'success',txt:'[+] X-Frame-Options: DENY'},
+        {t:'success',txt:'[+] Content-Security-Policy: present'},
+        {t:'warning',txt:'[!] X-Content-Type-Options: MISSING'},
+        {t:'warning',txt:'[!] Strict-Transport-Security: MISSING'},
+        {t:'output',txt:''},
+        {t:'success',txt:`[+] Scan complete. 5 ports open, 4 subdomains, 2 CVEs found.`},
+        {t:'success',txt:'[+] Report saved to: phantomrecon_report.html'},
+    ];
+    let i=0;
+    const interval=setInterval(()=>{
+        if(i>=lines.length){clearInterval(interval);btn.disabled=false;return;}
+        const l=lines[i];
+        const div=document.createElement('div');
+        div.className='scan-line visible';
+        div.innerHTML=`<span class="${l.t}">${l.txt}</span>`;
+        out.appendChild(div);out.scrollTop=out.scrollHeight;i++;
+    },150);
+}
+// ===== VAULTCRYPT =====
+async function deriveKey(password,salt){
+    const enc=new TextEncoder();
+    const key=await crypto.subtle.importKey('raw',enc.encode(password),'PBKDF2',false,['deriveKey']);
+    return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:100000,hash:'SHA-256'},key,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+}
+async function vaultEncrypt(){
+    const text=document.getElementById('vault-text').value;
+    const pass=document.getElementById('vault-pass').value;
+    if(!text||!pass){document.getElementById('vault-result').value='Preencha texto e senha!';return;}
+    try{
+        const enc=new TextEncoder();const salt=crypto.getRandomValues(new Uint8Array(16));
+        const iv=crypto.getRandomValues(new Uint8Array(12));
+        const key=await deriveKey(pass,salt);
+        const encrypted=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,enc.encode(text));
+        const buf=new Uint8Array(salt.length+iv.length+new Uint8Array(encrypted).length);
+        buf.set(salt,0);buf.set(iv,salt.length);buf.set(new Uint8Array(encrypted),salt.length+iv.length);
+        document.getElementById('vault-result').value=btoa(String.fromCharCode(...buf));
+    }catch(e){document.getElementById('vault-result').value='Erro: '+e.message;}
+}
+async function vaultDecrypt(){
+    const b64=document.getElementById('vault-text').value;
+    const pass=document.getElementById('vault-pass').value;
+    if(!b64||!pass){document.getElementById('vault-result').value='Cole o texto cifrado e insira a senha!';return;}
+    try{
+        const buf=new Uint8Array(atob(b64).split('').map(c=>c.charCodeAt(0)));
+        const salt=buf.slice(0,16);const iv=buf.slice(16,28);const data=buf.slice(28);
+        const key=await deriveKey(pass,salt);
+        const decrypted=await crypto.subtle.decrypt({name:'AES-GCM',iv},key,data);
+        document.getElementById('vault-result').value=new TextDecoder().decode(decrypted);
+    }catch(e){document.getElementById('vault-result').value='Erro ao decriptar. Senha incorreta ou dados corrompidos.';}
+}
+// ===== PACKET PULSE =====
+let packetAnim,pktTcp=0,pktUdp=0,pktAlert=0;
+const nodes=[];const packets=[];
+function startPacket(){
+    const cv=document.getElementById('packet-canvas');
+    cv.width=cv.parentElement.clientWidth-32;cv.height=300;
+    const cx=cv.getContext('2d');
+    nodes.length=0;packets.length=0;pktTcp=0;pktUdp=0;pktAlert=0;
+    const labels=['Server','Client','Firewall','DB','CDN','API','DNS','Proxy'];
+    for(let i=0;i<8;i++){
+        nodes.push({x:80+Math.random()*(cv.width-160),y:40+Math.random()*(cv.height-80),
+            r:18,label:labels[i],color:['#00ff88','#00b4d8','#ff3860','#ffd166','#7b2ff7','#ff6b35','#f72585','#00ff88'][i]});
+    }
+    function spawnPacket(){
+        const a=Math.floor(Math.random()*nodes.length);let b=a;while(b===a)b=Math.floor(Math.random()*nodes.length);
+        const proto=Math.random();let type,color;
+        if(proto<0.5){type='TCP';color='#00ff88';pktTcp++;}
+        else if(proto<0.85){type='UDP';color='#00b4d8';pktUdp++;}
+        else{type='!';color='#ff3860';pktAlert++;}
+        packets.push({from:a,to:b,t:0,speed:0.008+Math.random()*0.015,color,type});
+        document.getElementById('pkt-tcp').textContent=pktTcp;
+        document.getElementById('pkt-udp').textContent=pktUdp;
+        document.getElementById('pkt-alert').textContent=pktAlert;
+    }
+    function draw(){
+        cx.fillStyle='rgba(5,5,16,0.15)';cx.fillRect(0,0,cv.width,cv.height);
+        // connections
+        cx.strokeStyle='rgba(255,255,255,0.03)';cx.lineWidth=1;
+        for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){
+            cx.beginPath();cx.moveTo(nodes[i].x,nodes[i].y);cx.lineTo(nodes[j].x,nodes[j].y);cx.stroke();
+        }
+        // nodes
+        nodes.forEach(n=>{
+            cx.beginPath();cx.arc(n.x,n.y,n.r,0,Math.PI*2);
+            cx.fillStyle=n.color+'20';cx.fill();
+            cx.strokeStyle=n.color+'60';cx.lineWidth=1.5;cx.stroke();
+            cx.fillStyle=n.color;cx.font='9px Inter';cx.textAlign='center';cx.fillText(n.label,n.x,n.y+n.r+14);
+        });
+        // packets
+        for(let i=packets.length-1;i>=0;i--){
+            const p=packets[i];p.t+=p.speed;
+            if(p.t>=1){packets.splice(i,1);continue;}
+            const f=nodes[p.from],t=nodes[p.to];
+            const x=f.x+(t.x-f.x)*p.t,y=f.y+(t.y-f.y)*p.t;
+            cx.beginPath();cx.arc(x,y,p.type==='!'?5:3,0,Math.PI*2);
+            cx.fillStyle=p.color;cx.fill();
+            cx.shadowColor=p.color;cx.shadowBlur=8;cx.fill();cx.shadowBlur=0;
+        }
+        if(Math.random()>0.6)spawnPacket();
+        packetAnim=requestAnimationFrame(draw);
+    }
+    draw();
+}
+function stopPacket(){cancelAnimationFrame(packetAnim);}
+// ===== CYBERRUNNER GAME =====
+let gameRunning=false,gameAnim,gameScore=0;
+const player={x:80,y:0,vy:0,w:30,h:30,jumping:false};
+let obstacles=[],ground=0,speed=4,frameCount=0;
+function initGameCanvas(){
+    const cv=document.getElementById('game-canvas');
+    cv.width=820;cv.height=300;
+    ground=cv.height-50;player.y=ground-player.h;
+    const cx=cv.getContext('2d');
+    cx.fillStyle='#0a0a14';cx.fillRect(0,0,cv.width,cv.height);
+    cx.fillStyle='#1a1a3a';cx.fillRect(0,ground,cv.width,50);
+    cx.fillStyle='#00ff88';cx.font='20px JetBrains Mono';cx.textAlign='center';
+    cx.fillText('Press SPACE or click START to play',cv.width/2,cv.height/2);
+}
+function startGame(){
+    if(gameRunning)return;
+    gameRunning=true;gameScore=0;speed=4;frameCount=0;obstacles=[];
+    player.y=ground-player.h;player.vy=0;player.jumping=false;
+    const cv=document.getElementById('game-canvas');const cx=cv.getContext('2d');
+    function jump(){if(!player.jumping){player.vy=-10;player.jumping=true;}}
+    cv.onclick=jump;
+    function onKey(e){if(e.code==='Space'&&gameRunning){e.preventDefault();jump();}}
+    document.addEventListener('keydown',onKey);
+    function loop(){
+        if(!gameRunning)return;
+        cx.fillStyle='#0a0a14';cx.fillRect(0,0,cv.width,cv.height);
+        // ground
+        cx.fillStyle='#1a1a3a';cx.fillRect(0,ground,cv.width,50);
+        // grid lines
+        cx.strokeStyle='rgba(0,255,136,0.05)';cx.lineWidth=1;
+        for(let i=0;i<cv.width;i+=40){cx.beginPath();cx.moveTo(i,0);cx.lineTo(i,cv.height);cx.stroke();}
+        // player
+        player.vy+=0.5;player.y+=player.vy;
+        if(player.y>=ground-player.h){player.y=ground-player.h;player.vy=0;player.jumping=false;}
+        cx.fillStyle='#00ff88';cx.shadowColor='#00ff88';cx.shadowBlur=15;
+        cx.fillRect(player.x,player.y,player.w,player.h);cx.shadowBlur=0;
+        // neon outline for player
+        cx.strokeStyle='#00ff88';cx.lineWidth=2;cx.strokeRect(player.x,player.y,player.w,player.h);
+        // obstacles
+        frameCount++;
+        if(frameCount%Math.max(40,80-Math.floor(gameScore/5))===0){
+            const h=20+Math.random()*40;
+            obstacles.push({x:cv.width,y:ground-h,w:20+Math.random()*15,h});
+        }
+        obstacles.forEach(o=>{
+            o.x-=speed;
+            cx.fillStyle='#ff3860';cx.shadowColor='#ff3860';cx.shadowBlur=10;
+            cx.fillRect(o.x,o.y,o.w,o.h);cx.shadowBlur=0;
+            cx.strokeStyle='#ff3860';cx.lineWidth=1.5;cx.strokeRect(o.x,o.y,o.w,o.h);
+        });
+        obstacles=obstacles.filter(o=>o.x+o.w>0);
+        // collision
+        for(const o of obstacles){
+            if(player.x<o.x+o.w&&player.x+player.w>o.x&&player.y<o.y+o.h&&player.y+player.h>o.y){
+                gameRunning=false;
+                cx.fillStyle='rgba(6,6,16,0.7)';cx.fillRect(0,0,cv.width,cv.height);
+                cx.fillStyle='#ff3860';cx.font='28px JetBrains Mono';cx.textAlign='center';
+                cx.fillText('GAME OVER',cv.width/2,cv.height/2-15);
+                cx.fillStyle='#e8e8f0';cx.font='16px Inter';
+                cx.fillText('Score: '+gameScore+' | Click START to retry',cv.width/2,cv.height/2+20);
+                document.removeEventListener('keydown',onKey);return;
+            }
+        }
+        gameScore++;speed=4+gameScore*0.005;
+        document.getElementById('game-score').textContent=gameScore;
+        // HUD line
+        cx.fillStyle='var(--accent-cyber)';cx.font='11px JetBrains Mono';cx.textAlign='left';
+        cx.fillStyle='#00ff88';cx.fillText('SPD: '+speed.toFixed(1),10,20);
+        gameAnim=requestAnimationFrame(loop);
+    }
+    loop();
+}
+function stopGame(){gameRunning=false;cancelAnimationFrame(gameAnim);}
+// ===== SYNTHWAVE STUDIO =====
+let audioCtx,synthGain,synthDelay,synthAnalyser,activeOscillators={},synthVizAnim;
+const noteFreqs={C:261.63,Cs:277.18,D:293.66,Ds:311.13,E:329.63,F:349.23,Fs:369.99,G:392.00,Gs:415.30,A:440.00,As:466.16,B:493.88};
+const keyMap={a:'C',w:'Cs',s:'D',e:'Ds',d:'E',f:'F',t:'Fs',g:'G',y:'Gs',h:'A',u:'As',j:'B',k:'C5'};
+function initSynth(){
+    if(audioCtx)return;
+    audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    synthGain=audioCtx.createGain();synthGain.gain.value=0.4;
+    synthDelay=audioCtx.createDelay(1.0);synthDelay.delayTime.value=0.15;
+    const feedback=audioCtx.createGain();feedback.gain.value=0.3;
+    synthAnalyser=audioCtx.createAnalyser();synthAnalyser.fftSize=256;
+    synthGain.connect(synthAnalyser);synthAnalyser.connect(audioCtx.destination);
+    synthGain.connect(synthDelay);synthDelay.connect(feedback);feedback.connect(synthDelay);
+    synthDelay.connect(audioCtx.destination);
+    // build keys
+    const keysEl=document.getElementById('synth-keys');keysEl.innerHTML='';
+    const notes=[
+        {n:'C',black:false,k:'A'},{n:'Cs',black:true,k:'W'},{n:'D',black:false,k:'S'},
+        {n:'Ds',black:true,k:'E'},{n:'E',black:false,k:'D'},{n:'F',black:false,k:'F'},
+        {n:'Fs',black:true,k:'T'},{n:'G',black:false,k:'G'},{n:'Gs',black:true,k:'Y'},
+        {n:'A',black:false,k:'H'},{n:'As',black:true,k:'U'},{n:'B',black:false,k:'J'},
+        {n:'C5',black:false,k:'K'}
+    ];
+    notes.forEach(note=>{
+        const key=document.createElement('div');
+        key.className='synth-key'+(note.black?' black':'');
+        key.dataset.note=note.n;
+        key.innerHTML='<span>'+note.k+'</span>';
+        key.addEventListener('mousedown',()=>playNote(note.n,key));
+        key.addEventListener('mouseup',()=>stopNote(note.n,key));
+        key.addEventListener('mouseleave',()=>stopNote(note.n,key));
+        keysEl.appendChild(key);
+    });
+    document.addEventListener('keydown',synthKeyDown);
+    document.addEventListener('keyup',synthKeyUp);
+    drawSynthViz();
+}
+function getFreq(note){
+    const octave=parseInt(document.getElementById('synth-octave').value);
+    if(note==='C5')return noteFreqs['C']*Math.pow(2,octave-4+1);
+    const base=noteFreqs[note];if(!base)return 440;
+    return base*Math.pow(2,octave-4);
+}
+function playNote(note,keyEl){
+    if(activeOscillators[note])return;
+    if(audioCtx.state==='suspended')audioCtx.resume();
+    const osc=audioCtx.createOscillator();
+    osc.type=document.getElementById('synth-wave').value;
+    osc.frequency.value=getFreq(note);
+    const vol=document.getElementById('synth-vol').value/100;
+    synthGain.gain.value=vol;
+    const delayVal=document.getElementById('synth-delay').value/100*0.5;
+    synthDelay.delayTime.value=delayVal;
+    osc.connect(synthGain);osc.start();
+    activeOscillators[note]=osc;
+    if(keyEl)keyEl.classList.add('active');
+}
+function stopNote(note,keyEl){
+    if(activeOscillators[note]){activeOscillators[note].stop();delete activeOscillators[note];}
+    if(keyEl)keyEl.classList.remove('active');
+}
+function synthKeyDown(e){
+    if(e.repeat)return;
+    const note=keyMap[e.key.toLowerCase()];
+    if(note){const keyEl=document.querySelector(`.synth-key[data-note="${note}"]`);playNote(note,keyEl);}
+}
+function synthKeyUp(e){
+    const note=keyMap[e.key.toLowerCase()];
+    if(note){const keyEl=document.querySelector(`.synth-key[data-note="${note}"]`);stopNote(note,keyEl);}
+}
+function drawSynthViz(){
+    const cv=document.getElementById('synth-viz');
+    cv.width=cv.parentElement.clientWidth;cv.height=80;
+    const cx=cv.getContext('2d');
+    function draw(){
+        if(!synthAnalyser){synthVizAnim=requestAnimationFrame(draw);return;}
+        const bufLen=synthAnalyser.frequencyBinCount;
+        const data=new Uint8Array(bufLen);synthAnalyser.getByteFrequencyData(data);
+        cx.fillStyle='rgba(0,0,0,0.3)';cx.fillRect(0,0,cv.width,cv.height);
+        const barW=(cv.width/bufLen)*2;let x=0;
+        for(let i=0;i<bufLen;i++){
+            const v=data[i]/255;const h=v*cv.height;
+            const hue=120+i*2;
+            cx.fillStyle=`hsla(${hue},100%,50%,${0.3+v*0.7})`;
+            cx.fillRect(x,cv.height-h,barW-1,h);x+=barW;
+        }
+        synthVizAnim=requestAnimationFrame(draw);
+    }
+    draw();
+}
+// ===== TERMINAL COM MULTI-LINGUAGENS =====
+const terminalInput=document.getElementById('terminal-input');
+const terminalBody=document.getElementById('terminal-body');
+const cmds={
+    help:{
+        out:'<span class="success">Comandos disponiveis:</span><br>'+
+            '<span class="output">  help        — lista de comandos</span><br>'+
+            '<span class="output">  projects    — meus projetos</span><br>'+
+            '<span class="output">  skills      — tech stack</span><br>'+
+            '<span class="output">  about       — sobre mim</span><br>'+
+            '<span class="output">  neofetch    — system info</span><br>'+
+            '<span class="output">  hack        — ethical hacking sim</span><br>'+
+            '<span class="output">  matrix      — red pill or blue pill</span><br>'+
+            '<span class="output">  date        — data e hora</span><br>'+
+            '<span class="output">  coffee      — energia</span><br>'+
+            '<span class="output">  clear       — limpar terminal</span><br><br>'+
+            '<span class="success">Comandos em linguagens:</span><br>'+
+            '<span class="output">  python      — exemplo Python</span><br>'+
+            '<span class="output">  javascript  — exemplo JavaScript</span><br>'+
+            '<span class="output">  java        — exemplo Java (Android)</span><br>'+
+            '<span class="output">  swift       — exemplo Swift (iOS)</span><br>'+
+            '<span class="output">  kotlin      — exemplo Kotlin (Android)</span><br>'+
+            '<span class="output">  rust        — exemplo Rust</span><br>'+
+            '<span class="output">  go          — exemplo Go</span><br>'+
+            '<span class="output">  bash        — exemplo Bash</span><br>'+
+            '<span class="output">  sql         — exemplo SQL</span><br>'+
+            '<span class="output">  cpp         — exemplo C++</span><br>'+
+            '<span class="output">  csharp      — exemplo C#</span><br>'+
+            '<span class="output">  ruby        — exemplo Ruby</span><br>'+
+            '<span class="output">  php         — exemplo PHP</span><br>'+
+            '<span class="output">  dart        — exemplo Dart (Flutter)</span><br>'+
+            '<span class="output">  typescript  — exemplo TypeScript</span><br>'+
+            '<span class="output">  lua         — exemplo Lua</span>'
+    },
+    projects:{
+        out:'<span class="output">PhantomRecon | VaultCrypt | PacketPulse | CyberRunner 2077</span><br>'+
+            '<span class="output">SynthWave Studio | SentinelGuard SIEM</span><br>'+
+            '<span class="output">Mobile App (Android Studio - Java) | Mobile App (Xcode - Swift)</span><br>'+
+            '<span class="success">8 projetos — clique nos cards para testar!</span>'
+    },
+    skills:{
+        out:'<span class="success">Python     [####################] 95%</span><br>'+
+            '<span class="success">JS/TS      [################----] 88%</span><br>'+
+            '<span class="success">Java       [################----] 85%</span><br>'+
+            '<span class="success">Swift      [##############------] 78%</span><br>'+
+            '<span class="success">Kotlin     [##############------] 80%</span><br>'+
+            '<span class="success">Linux      [###################-] 92%</span><br>'+
+            '<span class="success">CyberSec   [##################--] 90%</span><br>'+
+            '<span class="success">Docker     [#################---] 85%</span><br>'+
+            '<span class="success">Rust/Go    [##############------] 72%</span><br>'+
+            '<span class="success">SQL        [################----] 88%</span><br>'+
+            '<span class="success">C++/C#     [#############-------] 70%</span><br>'+
+            '<span class="success">Dart       [############--------] 68%</span><br>'+
+            '<span class="success">Azure      [##############------] 80%</span><br>'+
+            '<span class="success">ServiceNow [###############-----] 82%</span><br>'+
+            '<span class="success">P.Automate [################----] 85%</span><br>'+
+            '<span class="success">Power BI   [##############------] 78%</span>'
+    },
+    about:{
+        out:'<span class="output">Iuri Santalucia | Brazil</span><br>'+
+            '<span class="output">Unified Workforce Engineer @ Syngenta</span><br>'+
+            '<span class="output">Cybersecurity | Full-Stack | Mobile (Android + iOS) | Automation</span>'
+    },
+    hack:{
+        out:'<span class="warning">[*] Initializing penetration test...</span><br>'+
+            '<span class="warning">[*] Scanning target 192.168.1.1...</span><br>'+
+            '<span class="error">[!] ################ 100%</span><br>'+
+            '<span class="success">[+] Access granted. Just kidding — always hack ethically! 🔒</span>'
+    },
+    matrix:{out:'<span class="success">Wake up, Iuri... The Matrix has you... Follow the white rabbit. 🐇</span>'},
+    clear:{out:'CLEAR'},
+    date:{out:'<span class="output">'+new Date().toLocaleString('pt-BR')+'</span>'},
+    coffee:{out:'<span class="success">☕ Brewing... Done! Energy: ████████████ 100%</span>'},
+    scan:{out:'<span class="warning">Use a demo PhantomRecon! Clique "Simular Scan" no card.</span>'},
+    encrypt:{out:'<span class="warning">Use a demo VaultCrypt! Clique "Testar Criptografia" no card.</span>'},
+    neofetch:{
+        out:'<span class="success">  ╔═══════════════════════════════════╗</span><br>'+
+            '<span class="success">  ║   iuri@portfolio                  ║</span><br>'+
+            '<span class="success">  ╠═══════════════════════════════════╣</span><br>'+
+            '<span class="success">  ║  OS:       PortfolioOS 2026       ║</span><br>'+
+            '<span class="success">  ║  Shell:    zsh 5.9                ║</span><br>'+
+            '<span class="success">  ║  Theme:    Cyberpunk Dark         ║</span><br>'+
+            '<span class="success">  ║  Projects: 8 active              ║</span><br>'+
+            '<span class="success">  ║  Langs:    16 languages           ║</span><br>'+
+            '<span class="success">  ║  Uptime:   99.97%                ║</span><br>'+
+            '<span class="success">  ║  Mobile:   Android + iOS          ║</span><br>'+
+            '<span class="success">  ╚═══════════════════════════════════╝</span>'
+    },
+    // ===== COMANDOS POR LINGUAGEM =====
+    python:{
+        out:'<span class="warning">>>> Python 3.12</span><br>'+
+            '<span class="command">def fibonacci(n):</span><br>'+
+            '<span class="command">    a, b = 0, 1</span><br>'+
+            '<span class="command">    for _ in range(n):</span><br>'+
+            '<span class="command">        yield a</span><br>'+
+            '<span class="command">        a, b = b, a + b</span><br><br>'+
+            '<span class="command">print(list(fibonacci(10)))</span><br>'+
+            '<span class="success">>>> [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]</span>'
+    },
+    javascript:{
+        out:'<span class="warning">// Node.js v20</span><br>'+
+            '<span class="command">const fetchData = async (url) => {</span><br>'+
+            '<span class="command">  const res = await fetch(url);</span><br>'+
+            '<span class="command">  const data = await res.json();</span><br>'+
+            '<span class="command">  return data.filter(item => item.active);</span><br>'+
+            '<span class="command">};</span><br><br>'+
+            '<span class="command">fetchData("/api/users").then(console.log);</span><br>'+
+            '<span class="success">// => [{id: 1, name: "Iuri", active: true}]</span>'
+    },
+    java:{
+        out:'<span class="warning">// Java — Android Studio</span><br>'+
+            '<span class="command">public class MainActivity extends AppCompatActivity {</span><br>'+
+            '<span class="command">    @Override</span><br>'+
+            '<span class="command">    protected void onCreate(Bundle savedInstanceState) {</span><br>'+
+            '<span class="command">        super.onCreate(savedInstanceState);</span><br>'+
+            '<span class="command">        setContentView(R.layout.activity_main);</span><br>'+
+            '<span class="command">        TextView tv = findViewById(R.id.textView);</span><br>'+
+            '<span class="command">        tv.setText("Hello from Android!");</span><br>'+
+            '<span class="command">    }</span><br>'+
+            '<span class="command">}</span><br>'+
+            '<span class="success">// ✔ Build successful — running on Pixel 7 emulator</span>'
+    },
+    swift:{
+        out:'<span class="warning">// Swift — Xcode / iOS</span><br>'+
+            '<span class="command">import SwiftUI</span><br><br>'+
+            '<span class="command">struct ContentView: View {</span><br>'+
+            '<span class="command">    @State private var count = 0</span><br>'+
+            '<span class="command">    var body: some View {</span><br>'+
+            '<span class="command">        VStack {</span><br>'+
+            '<span class="command">            Text("Taps: \\(count)")</span><br>'+
+            '<span class="command">                .font(.largeTitle)</span><br>'+
+            '<span class="command">            Button("Tap me") { count += 1 }</span><br>'+
+            '<span class="command">                .buttonStyle(.borderedProminent)</span><br>'+
+            '<span class="command">        }</span><br>'+
+            '<span class="command">    }</span><br>'+
+            '<span class="command">}</span><br>'+
+            '<span class="success">// ✔ Build succeeded — running on iPhone 15 simulator</span>'
+    },
+    kotlin:{
+        out:'<span class="warning">// Kotlin — Android</span><br>'+
+            '<span class="command">class MainActivity : AppCompatActivity() {</span><br>'+
+            '<span class="command">    override fun onCreate(saved: Bundle?) {</span><br>'+
+            '<span class="command">        super.onCreate(saved)</span><br>'+
+            '<span class="command">        setContentView(R.layout.activity_main)</span><br>'+
+            '<span class="command">        val items = listOf("Cyber", "Code", "Hack")</span><br>'+
+            '<span class="command">        items.filter { it.length > 3 }</span><br>'+
+            '<span class="command">              .forEach { println(it) }</span><br>'+
+            '<span class="command">    }</span><br>'+
+            '<span class="command">}</span><br>'+
+            '<span class="success">// => Cyber, Hack</span>'
+    },
+    rust:{
+        out:'<span class="warning">// Rust 1.76</span><br>'+
+            '<span class="command">fn main() {</span><br>'+
+            '<span class="command">    let nums: Vec&lt;i32&gt; = (1..=10)</span><br>'+
+            '<span class="command">        .filter(|x| x % 2 == 0)</span><br>'+
+            '<span class="command">        .map(|x| x * x)</span><br>'+
+            '<span class="command">        .collect();</span><br>'+
+            '<span class="command">    println!("{:?}", nums);</span><br>'+
+            '<span class="command">}</span><br>'+
+            '<span class="success">// => [4, 16, 36, 64, 100]</span>'
+    },
+    go:{
+        out:'<span class="warning">// Go 1.22</span><br>'+
+            '<span class="command">package main</span><br>'+
+            '<span class="command">import ("fmt"; "net/http")</span><br><br>'+
+            '<span class="command">func handler(w http.ResponseWriter, r *http.Request) {</span><br>'+
+            '<span class="command">    fmt.Fprintf(w, "Hello, %s!", r.URL.Path[1:])</span><br>'+
+            '<span class="command">}</span><br>'+
+            '<span class="command">func main() {</span><br>'+
+            '<span class="command">    http.HandleFunc("/", handler)</span><br>'+
+            '<span class="command">    http.ListenAndServe(":8080", nil)</span><br>'+
+            '<span class="command">}</span><br>'+
+            '<span class="success">// Server running on :8080</span>'
+    },
+    bash:{
+        out:'<span class="warning">#!/bin/bash</span><br>'+
+            '<span class="command">echo "=== System Report ==="</span><br>'+
+            '<span class="command">echo "User: $(whoami)"</span><br>'+
+            '<span class="command">echo "Host: $(hostname)"</span><br>'+
+            '<span class="command">echo "Uptime: $(uptime -p)"</span><br>'+
+            '<span class="command">echo "Disk: $(df -h / | tail -1 | awk \'{print $5}\')"</span><br>'+
+            '<span class="command">echo "Procs: $(ps aux | wc -l)"</span><br><br>'+
+            '<span class="success">=== System Report ===</span><br>'+
+            '<span class="success">User: iuri</span><br>'+
+            '<span class="success">Host: kali-dev</span><br>'+
+            '<span class="success">Uptime: up 14 days, 6 hours</span><br>'+
+            '<span class="success">Disk: 42%</span><br>'+
+            '<span class="success">Procs: 237</span>'
+    },
+    sql:{
+        out:'<span class="warning">-- PostgreSQL 16</span><br>'+
+            '<span class="command">SELECT u.name, COUNT(p.id) AS projects,</span><br>'+
+            '<span class="command">       MAX(p.created_at) AS latest</span><br>'+
+            '<span class="command">FROM users u</span><br>'+
+            '<span class="command">JOIN projects p ON u.id = p.user_id</span><br>'+
+            '<span class="command">WHERE u.active = true</span><br>'+
+            '<span class="command">GROUP BY u.name</span><br>'+
+            '<span class="command">ORDER BY projects DESC;</span><br><br>'+
+            '<span class="success"> name  | projects | latest     </span><br>'+
+            '<span class="success">-------+----------+------------</span><br>'+
+            '<span class="success"> Iuri  |        8 | 2026-04-06</span>'
+    },
+    cpp:{
+        out:'<span class="warning">// C++ 20</span><br>'+
+            '<span class="command">#include &lt;iostream&gt;</span><br>'+
+            '<span class="command">#include &lt;vector&gt;</span><br>'+
+            '<span class="command">#include &lt;algorithm&gt;</span><br><br>'+
+            '<span class="command">int main() {</span><br>'+
+            '<span class="command">    std::vector&lt;int&gt; v = {5, 3, 8, 1, 9, 2};</span><br>'+
+            '<span class="command">    std::ranges::sort(v);</span><br>'+
+            '<span class="command">    for (auto n : v)</span><br>'+
+            '<span class="command">        std::cout &lt;&lt; n &lt;&lt; " ";</span><br>'+
+            '<span class="command">}</span><br>'+
+            '<span class="success">// => 1 2 3 5 8 9</span>'
+    },
+    csharp:{
+        out:'<span class="warning">// C# .NET 8</span><br>'+
+            '<span class="command">using System.Linq;</span><br><br>'+
+            '<span class="command">var devs = new[] { "Iuri", "Ana", "Pedro" };</span><br>'+
+            '<span class="command">var result = devs</span><br>'+
+            '<span class="command">    .Where(d => d.Length > 3)</span><br>'+
+            '<span class="command">    .Select(d => d.ToUpper())</span><br>'+
+            '<span class="command">    .ToList();</span><br>'+
+            '<span class="command">result.ForEach(Console.WriteLine);</span><br><br>'+
+            '<span class="success">// => IURI</span><br>'+
+            '<span class="success">// => PEDRO</span>'
+    },
+    ruby:{
+        out:'<span class="warning"># Ruby 3.3</span><br>'+
+            '<span class="command">passwords = 5.times.map do</span><br>'+
+            '<span class="command">  chars = [*"a".."z", *"0".."9", *"!@#$%"]</span><br>'+
+            '<span class="command">  chars.sample(16).join</span><br>'+
+            '<span class="command">end</span><br>'+
+            '<span class="command">puts passwords</span><br><br>'+
+            '<span class="success">=> x9#k2m!a7f$bp4e</span><br>'+
+            '<span class="success">=> 3h%jw8r@n1vc!5q</span><br>'+
+            '<span class="success">=> m$2ay9!kf7#pe6b</span>'
+    },
+    php:{
+        out:'<span class="warning">// PHP 8.3</span><br>'+
+            '<span class="command">&lt;?php</span><br>'+
+            '<span class="command">$users = ["Iuri" => 95, "Ana" => 87, "Leo" => 92];</span><br>'+
+            '<span class="command">$top = array_filter($users, fn($s) => $s >= 90);</span><br>'+
+            '<span class="command">array_walk($top, function($score, $name) {</span><br>'+
+            '<span class="command">    echo "$name: $score/100\\n";</span><br>'+
+            '<span class="command">});</span><br><br>'+
+            '<span class="success">Iuri: 95/100</span><br>'+
+            '<span class="success">Leo: 92/100</span>'
+    },
+    dart:{
+        out:'<span class="warning">// Dart — Flutter</span><br>'+
+            '<span class="command">import \'package:flutter/material.dart\';</span><br><br>'+
+            '<span class="command">class MyApp extends StatelessWidget {</span><br>'+
+            '<span class="command">  @override</span><br>'+
+            '<span class="command">  Widget build(BuildContext context) {</span><br>'+
+            '<span class="command">    return MaterialApp(</span><br>'+
+            '<span class="command">      home: Scaffold(</span><br>'+
+            '<span class="command">        appBar: AppBar(title: Text("Portfolio")),</span><br>'+
+            '<span class="command">        body: Center(child: Text("Hello Flutter!")),</span><br>'+
+            '<span class="command">      ),</span><br>'+
+            '<span class="command">    );</span><br>'+
+            '<span class="command">  }</span><br>'+
+            '<span class="command">}</span><br>'+
+            '<span class="success">// ✔ Flutter app running on Chrome</span>'
+    },
+    typescript:{
+        out:'<span class="warning">// TypeScript 5.4</span><br>'+
+            '<span class="command">interface Developer {</span><br>'+
+            '<span class="command">  name: string;</span><br>'+
+            '<span class="command">  skills: string[];</span><br>'+
+            '<span class="command">  level: "junior" | "mid" | "senior";</span><br>'+
+            '<span class="command">}</span><br><br>'+
+            '<span class="command">const iuri: Developer = {</span><br>'+
+            '<span class="command">  name: "Iuri Santalucia",</span><br>'+
+            '<span class="command">  skills: ["Python","Java","Swift","React"],</span><br>'+
+            '<span class="command">  level: "senior"</span><br>'+
+            '<span class="command">};</span><br>'+
+            '<span class="command">console.log(`${iuri.name}: ${iuri.skills.length} skills`);</span><br>'+
+            '<span class="success">// => Iuri Santalucia: 4 skills</span>'
+    },
+    lua:{
+        out:'<span class="warning">-- Lua 5.4</span><br>'+
+            '<span class="command">function quicksort(t, lo, hi)</span><br>'+
+            '<span class="command">  lo, hi = lo or 1, hi or #t</span><br>'+
+            '<span class="command">  if lo >= hi then return t end</span><br>'+
+            '<span class="command">  local pivot = t[hi]</span><br>'+
+            '<span class="command">  local idx = lo</span><br>'+
+            '<span class="command">  for i = lo, hi - 1 do</span><br>'+
+            '<span class="command">    if t[i] <= pivot then</span><br>'+
+            '<span class="command">      t[i], t[idx] = t[idx], t[i]</span><br>'+
+            '<span class="command">      idx = idx + 1</span><br>'+
+            '<span class="command">    end</span><br>'+
+            '<span class="command">  end</span><br>'+
+            '<span class="command">  t[idx], t[hi] = t[hi], t[idx]</span><br>'+
+            '<span class="command">  quicksort(t, lo, idx - 1)</span><br>'+
+            '<span class="command">  quicksort(t, idx + 1, hi)</span><br>'+
+            '<span class="command">  return t</span><br>'+
+            '<span class="command">end</span><br>'+
+            '<span class="command">print(table.concat(quicksort({7,3,9,1,5}), ", "))</span><br>'+
+            '<span class="success">-- => 1, 3, 5, 7, 9</span>'
+    },
+};
+// Placeholder do terminal - atualizar
+terminalInput.placeholder = "help, python, java, swift, kotlin, rust, go, bash, sql, cpp...";
+// Command history
+let cmdHistory = [];
+let historyIdx = -1;
+terminalInput.addEventListener('keydown', e => {
+    if(e.key === 'ArrowUp') {
+        e.preventDefault();
+        if(cmdHistory.length && historyIdx < cmdHistory.length - 1) {
+            historyIdx++;
+            terminalInput.value = cmdHistory[cmdHistory.length - 1 - historyIdx];
+        }
+    } else if(e.key === 'ArrowDown') {
+        e.preventDefault();
+        if(historyIdx > 0) { historyIdx--; terminalInput.value = cmdHistory[cmdHistory.length - 1 - historyIdx]; }
+        else { historyIdx = -1; terminalInput.value = ''; }
+    }
+});
+terminalInput.addEventListener('keypress', e => {
+    if(e.key === 'Enter') {
+        const raw = terminalInput.value.trim();
+        if(!raw) return;
+        const cmd = raw.toLowerCase().replace('#','sharp');
+        cmdHistory.push(raw);
+        historyIdx = -1;
+        const inputLine = document.getElementById('terminal-input-line');
+        const cmdLine = document.createElement('div');
+        cmdLine.innerHTML = '<span class="prompt">$</span> <span class="command">' + raw + '</span>';
+        inputLine.before(cmdLine);
+        if(cmd === 'clear') {
+            terminalBody.innerHTML = '';
+            terminalBody.appendChild(inputLine);
+        } else {
+            const entry = cmds[cmd];
+            const out = document.createElement('div');
+            if(entry) {
+                out.innerHTML = entry.out;
+            } else {
+                // Sugestão inteligente
+                const available = Object.keys(cmds).filter(k => k !== 'clear');
+                const close = available.filter(k => k.startsWith(cmd.substring(0,2)));
+                let hint = close.length ? ' Did you mean: ' + close.join(', ') + '?' : '';
+                out.innerHTML = '<span class="error">Command not found: ' + raw + '.' + hint + '</span><br><span class="output">Type "help" for available commands.</span>';
+            }
+            inputLine.before(out);
+            inputLine.before(document.createElement('br'));
+        }
+        terminalInput.value = '';
+        terminalBody.scrollTop = terminalBody.scrollHeight;
+    }
+});
+document.querySelector('.terminal').addEventListener('click', () => terminalInput.focus());
+</script>
+</body>
+</html>
+
+
+
+
+
