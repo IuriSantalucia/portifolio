@@ -1,0 +1,1570 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VetGen Academy - Genética Veterinária</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --primary: #00b894;
+    --primary-dark: #00997a;
+    --secondary: #6c5ce7;
+    --accent: #fd79a8;
+    --dark: #0a0e27;
+    --card-bg: rgba(15, 20, 50, 0.88);
+    --glass: rgba(255,255,255,0.06);
+    --text: #e0e0e0;
+    --text-bright: #ffffff;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* ============ 3D DNA HELIX BACKGROUND ============ */
+  .dna-scene {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    background: linear-gradient(160deg, #050816 0%, #0a0e27 30%, #10163a 60%, #080d20 100%);
+    overflow: hidden;
+    perspective: 1200px;
+  }
+
+  /* Multiple rotating DNA strands */
+  .dna-helix-wrapper {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform-style: preserve-3d;
+  }
+
+  .dna-helix-wrapper.center {
+    transform: translate(-50%, -50%);
+    animation: dnaRotateCenter 12s linear infinite;
+  }
+
+  .dna-helix-wrapper.left {
+    left: 12%;
+    transform: translate(-50%, -50%) scale(0.5);
+    animation: dnaRotateLeft 18s linear infinite;
+    opacity: 0.3;
+  }
+
+  .dna-helix-wrapper.right {
+    left: 88%;
+    transform: translate(-50%, -50%) scale(0.45);
+    animation: dnaRotateRight 20s linear infinite;
+    opacity: 0.25;
+  }
+
+  .dna-helix-wrapper.far-left {
+    left: 3%;
+    transform: translate(-50%, -50%) scale(0.3);
+    animation: dnaRotateLeft 25s linear infinite;
+    opacity: 0.15;
+  }
+
+  .dna-helix-wrapper.far-right {
+    left: 97%;
+    transform: translate(-50%, -50%) scale(0.3);
+    animation: dnaRotateRight 22s linear infinite;
+    opacity: 0.15;
+  }
+
+  @keyframes dnaRotateCenter {
+    0%   { transform: translate(-50%, -50%) rotateY(0deg); }
+    100% { transform: translate(-50%, -50%) rotateY(360deg); }
+  }
+
+  @keyframes dnaRotateLeft {
+    0%   { transform: translate(-50%, -50%) scale(0.5) rotateY(0deg) rotateX(15deg); }
+    100% { transform: translate(-50%, -50%) scale(0.5) rotateY(-360deg) rotateX(15deg); }
+  }
+
+  @keyframes dnaRotateRight {
+    0%   { transform: translate(-50%, -50%) scale(0.45) rotateY(0deg) rotateX(-10deg); }
+    100% { transform: translate(-50%, -50%) scale(0.45) rotateY(360deg) rotateX(-10deg); }
+  }
+
+  .dna-helix {
+    position: relative;
+    transform-style: preserve-3d;
+    width: 0; height: 0;
+  }
+
+  .dna-rung {
+    position: absolute;
+    transform-style: preserve-3d;
+    left: 0; top: 0;
+  }
+
+  .dna-ball {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 15px currentColor, inset 0 -2px 4px rgba(0,0,0,0.3);
+  }
+
+  .dna-ball.strand-a {
+    color: var(--primary);
+    background: radial-gradient(circle at 35% 35%, #55efc4, #00b894, #007a63);
+  }
+
+  .dna-ball.strand-b {
+    color: var(--secondary);
+    background: radial-gradient(circle at 35% 35%, #a29bfe, #6c5ce7, #4834d4);
+  }
+
+  .dna-connector {
+    position: absolute;
+    height: 2px;
+    transform-origin: left center;
+    transform: translate(0, -50%);
+    background: linear-gradient(90deg, 
+      rgba(0,184,148,0.6), 
+      rgba(253,121,168,0.4) 30%, 
+      rgba(253,203,110,0.4) 70%, 
+      rgba(108,92,231,0.6));
+    box-shadow: 0 0 8px rgba(0,184,148,0.2);
+  }
+
+  /* Floating base pair labels */
+  .dna-label {
+    position: absolute;
+    font-family: 'Courier New', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    transform: translate(-50%, -50%);
+    opacity: 0.7;
+    text-shadow: 0 0 10px currentColor;
+  }
+
+  .dna-label.base-A { color: #00b894; }
+  .dna-label.base-T { color: #fd79a8; }
+  .dna-label.base-G { color: #fdcb6e; }
+  .dna-label.base-C { color: #6c5ce7; }
+
+  /* Ambient particles */
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    animation: particleFloat linear infinite;
+    pointer-events: none;
+  }
+
+  @keyframes particleFloat {
+    0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+    10%  { opacity: 1; transform: translateY(90vh) scale(1); }
+    90%  { opacity: 0.5; }
+    100% { transform: translateY(-10vh) scale(0.5); opacity: 0; }
+  }
+
+  /* Radial glow behind center helix */
+  .dna-glow {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px; height: 700px;
+    background: radial-gradient(ellipse, rgba(0,184,148,0.06) 0%, rgba(108,92,231,0.03) 40%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* ============ MAIN CONTENT ============ */
+  .content {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ============ HERO ============ */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    position: relative;
+  }
+
+  .hero-inner { max-width: 900px; }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,184,148,0.12);
+    border: 1px solid rgba(0,184,148,0.25);
+    border-radius: 50px;
+    padding: 8px 22px;
+    font-size: 0.82rem;
+    color: var(--primary);
+    margin-bottom: 1.5rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    animation: fadeInDown 0.8s ease;
+    backdrop-filter: blur(10px);
+  }
+
+  .hero h1 {
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+    animation: fadeInUp 1s ease;
+  }
+
+  .hero h1 .gradient-text {
+    background: linear-gradient(135deg, var(--primary), #00cec9, var(--secondary), var(--accent));
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradientShift 6s ease infinite;
+  }
+
+  @keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  .hero p {
+    font-size: 1.15rem;
+    color: #aaa;
+    max-width: 600px;
+    margin: 0 auto 2rem;
+    line-height: 1.7;
+    animation: fadeInUp 1.2s ease;
+  }
+
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    flex-wrap: wrap;
+    animation: fadeInUp 1.4s ease;
+  }
+
+  .hero-stat { text-align: center; }
+
+  .hero-stat .number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--primary);
+    display: block;
+  }
+
+  .hero-stat .label {
+    font-size: 0.8rem;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .scroll-indicator {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: bounce 2s infinite;
+    cursor: pointer;
+    color: var(--primary);
+    font-size: 1.5rem;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(10px); }
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ============ SECTIONS ============ */
+  section {
+    padding: 5rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .section-header h2 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    color: var(--text-bright);
+  }
+
+  .section-header p {
+    color: #888;
+    font-size: 1rem;
+    max-width: 550px;
+    margin: 0 auto;
+  }
+
+  .section-header .line {
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    border-radius: 2px;
+    margin: 1rem auto 0;
+  }
+
+  /* ============ COURSE CARDS ============ */
+  .courses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .course-card {
+    background: var(--card-bg);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.4s ease;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+  }
+
+  .course-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--primary);
+    box-shadow: 0 20px 60px rgba(0,184,148,0.15);
+  }
+
+  .course-card .card-banner {
+    height: 160px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+  }
+
+  .course-card .card-banner.gen { background: linear-gradient(135deg, #00b894, #00cec9); }
+  .course-card .card-banner.nut { background: linear-gradient(135deg, #6c5ce7, #a29bfe); }
+  .course-card .card-banner.img { background: linear-gradient(135deg, #fd79a8, #e84393); }
+  .course-card .card-banner.onc { background: linear-gradient(135deg, #fdcb6e, #e17055); }
+  .course-card .card-banner.ort { background: linear-gradient(135deg, #0984e3, #74b9ff); }
+  .course-card .card-banner.der { background: linear-gradient(135deg, #55efc4, #00b894); }
+
+  .card-level {
+    position: absolute;
+    top: 12px; right: 12px;
+    background: rgba(0,0,0,0.5);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #fff;
+  }
+
+  .card-body { padding: 1.5rem; }
+
+  .card-body h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--text-bright);
+  }
+
+  .card-body p {
+    font-size: 0.85rem;
+    color: #999;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+
+  .card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: #777;
+  }
+
+  .card-meta .duration { display: flex; align-items: center; gap: 4px; }
+
+  .card-progress {
+    width: 100%; height: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    margin-top: 1rem;
+    overflow: hidden;
+  }
+
+  .card-progress .bar {
+    height: 100%;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    transition: width 1.5s ease;
+  }
+
+  /* ============ INTERACTIVE DNA LAB ============ */
+  .dna-lab {
+    background: var(--card-bg);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 2.5rem;
+    margin-top: 2rem;
+    backdrop-filter: blur(10px);
+  }
+
+  .lab-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .lab-select, .lab-btn {
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.05);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .lab-select:focus, .lab-btn:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+
+  .lab-btn {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    padding: 10px 30px;
+  }
+
+  .lab-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 20px rgba(0,184,148,0.3);
+  }
+
+  .dna-sequence {
+    font-family: 'Courier New', monospace;
+    font-size: 1.1rem;
+    letter-spacing: 3px;
+    padding: 1.5rem;
+    background: rgba(0,0,0,0.3);
+    border-radius: 12px;
+    overflow-x: auto;
+    white-space: nowrap;
+    margin-bottom: 1.5rem;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dna-sequence span { transition: all 0.2s ease; cursor: default; }
+  .dna-sequence span:hover { transform: scale(1.3); display: inline-block; }
+
+  .base-A { color: #00b894; }
+  .base-T { color: #fd79a8; }
+  .base-G { color: #6c5ce7; }
+  .base-C { color: #fdcb6e; }
+
+  .lab-result {
+    background: rgba(0,184,148,0.1);
+    border: 1px solid rgba(0,184,148,0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: none;
+  }
+
+  .lab-result.show { display: block; animation: fadeInUp 0.5s ease; }
+  .lab-result h4 { color: var(--primary); margin-bottom: 0.5rem; }
+  .lab-result p { font-size: 0.9rem; line-height: 1.7; color: #bbb; }
+
+  /* ============ QUIZ ============ */
+  .quiz-container {
+    background: var(--card-bg);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 2.5rem;
+    max-width: 700px;
+    margin: 0 auto;
+    backdrop-filter: blur(10px);
+  }
+
+  .quiz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+
+  .quiz-progress-text { font-size: 0.85rem; color: #888; }
+
+  .quiz-score {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+
+  .quiz-question {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: var(--text-bright);
+    line-height: 1.5;
+  }
+
+  .quiz-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .quiz-option {
+    padding: 14px 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.03);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .quiz-option:hover { border-color: var(--primary); background: rgba(0,184,148,0.08); }
+  .quiz-option.correct { border-color: #00b894; background: rgba(0,184,148,0.15); color: #00b894; }
+  .quiz-option.wrong { border-color: #e74c3c; background: rgba(231,76,60,0.15); color: #e74c3c; }
+
+  .quiz-option .letter {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+
+  .quiz-explanation {
+    padding: 1rem 1.5rem;
+    background: rgba(108,92,231,0.1);
+    border: 1px solid rgba(108,92,231,0.2);
+    border-radius: 12px;
+    font-size: 0.85rem;
+    color: #bbb;
+    line-height: 1.7;
+    display: none;
+    margin-bottom: 1rem;
+  }
+
+  .quiz-explanation.show { display: block; animation: fadeInUp 0.3s ease; }
+
+  .quiz-next {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: none;
+  }
+
+  .quiz-next:hover { transform: scale(1.02); box-shadow: 0 5px 20px rgba(0,184,148,0.3); }
+  .quiz-next.show { display: block; }
+
+  /* ============ PATIENT RECORDS ============ */
+  .patients-table-wrap {
+    overflow-x: auto;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+  }
+
+  .patients-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 700px;
+  }
+
+  .patients-table th {
+    background: rgba(0,184,148,0.15);
+    padding: 14px 18px;
+    text-align: left;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  .patients-table td {
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 0.9rem;
+  }
+
+  .patients-table tr:hover td { background: rgba(255,255,255,0.03); }
+
+  .status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .status-badge.em-tratamento { background: rgba(253,203,110,0.2); color: #fdcb6e; }
+  .status-badge.concluido { background: rgba(0,184,148,0.2); color: #00b894; }
+  .status-badge.aguardando { background: rgba(108,92,231,0.2); color: #a29bfe; }
+  .status-badge.urgente { background: rgba(231,76,60,0.2); color: #e74c3c; }
+
+  .search-bar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .search-input {
+    flex: 1;
+    min-width: 200px;
+    padding: 12px 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+  }
+
+  .search-input:focus { outline: none; border-color: var(--primary); }
+
+  .filter-btn {
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    transition: all 0.3s;
+  }
+
+  .filter-btn.active, .filter-btn:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+  }
+
+  /* ============ GENETICS CALCULATOR ============ */
+  .calc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  @media (max-width: 600px) { .calc-grid { grid-template-columns: 1fr; } }
+
+  .calc-parent {
+    background: var(--card-bg);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 1.5rem;
+    backdrop-filter: blur(10px);
+  }
+
+  .calc-parent h4 { color: var(--primary); margin-bottom: 1rem; font-size: 1rem; }
+
+  .allele-input { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; }
+
+  .allele-input input {
+    width: 50px; height: 50px;
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: 700;
+    border-radius: 10px;
+    border: 2px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.05);
+    color: var(--text-bright);
+    font-family: 'Inter', sans-serif;
+    text-transform: uppercase;
+  }
+
+  .allele-input input:focus { outline: none; border-color: var(--primary); }
+
+  .punnett-square {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    max-width: 300px;
+    margin: 1.5rem auto;
+  }
+
+  .punnett-cell {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    transition: all 0.3s;
+  }
+
+  .punnett-header { background: rgba(108,92,231,0.2); color: var(--secondary); }
+
+  .punnett-result {
+    background: rgba(0,184,148,0.1);
+    border: 1px solid rgba(0,184,148,0.2);
+    color: var(--text-bright);
+    cursor: pointer;
+  }
+
+  .punnett-result:hover { background: rgba(0,184,148,0.25); transform: scale(1.05); }
+  .punnett-empty { background: rgba(255,255,255,0.03); }
+
+  .genotype-results {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+  }
+
+  .genotype-chip {
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .genotype-chip.dominant { background: rgba(0,184,148,0.2); color: #00b894; }
+  .genotype-chip.heterozygous { background: rgba(108,92,231,0.2); color: #a29bfe; }
+  .genotype-chip.recessive { background: rgba(253,121,168,0.2); color: #fd79a8; }
+
+  /* ============ TEAM ============ */
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .team-card {
+    background: var(--card-bg);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.4s ease;
+    backdrop-filter: blur(10px);
+  }
+
+  .team-card:hover { transform: translateY(-5px); border-color: rgba(0,184,148,0.3); }
+
+  .team-avatar {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 800;
+    color: #fff;
+  }
+
+  .team-card:nth-child(1) .team-avatar { background: linear-gradient(135deg, #00b894, #00cec9); }
+  .team-card:nth-child(2) .team-avatar { background: linear-gradient(135deg, #6c5ce7, #a29bfe); }
+  .team-card:nth-child(3) .team-avatar { background: linear-gradient(135deg, #fd79a8, #e84393); }
+  .team-card:nth-child(4) .team-avatar { background: linear-gradient(135deg, #fdcb6e, #e17055); }
+
+  .team-card h4 { font-size: 1.05rem; font-weight: 700; color: var(--text-bright); margin-bottom: 0.3rem; }
+  .team-card .role { font-size: 0.8rem; color: var(--primary); margin-bottom: 0.5rem; }
+  .team-card .bio { font-size: 0.8rem; color: #888; line-height: 1.6; }
+
+  /* ============ TIMELINE ============ */
+  .timeline { position: relative; padding-left: 40px; }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px; top: 0; bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--primary), var(--secondary), var(--accent));
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: var(--card-bg);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    transition: all 0.3s;
+    backdrop-filter: blur(10px);
+  }
+
+  .timeline-item:hover { border-color: var(--primary); transform: translateX(5px); }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -33px; top: 1.8rem;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--primary);
+    border: 2px solid var(--dark);
+    box-shadow: 0 0 10px var(--primary);
+  }
+
+  .timeline-item .date {
+    font-size: 0.75rem;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.3rem;
+  }
+
+  .timeline-item h4 { font-size: 1rem; font-weight: 600; color: var(--text-bright); margin-bottom: 0.3rem; }
+  .timeline-item p { font-size: 0.85rem; color: #888; line-height: 1.6; }
+
+  /* ============ NAV ============ */
+  .navbar {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    z-index: 100;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(10,14,39,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .nav-logo {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--text-bright);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .nav-logo span { color: var(--primary); }
+
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+
+  .nav-links a {
+    color: #999;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: color 0.3s;
+  }
+
+  .nav-links a:hover { color: var(--primary); }
+
+  .nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text);
+    font-size: 1.5rem;
+    cursor: pointer;
+  }
+
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .nav-toggle { display: block; }
+    .nav-links.open {
+      display: flex;
+      flex-direction: column;
+      position: absolute;
+      top: 100%; left: 0;
+      width: 100%;
+      background: rgba(10,14,39,0.95);
+      backdrop-filter: blur(20px);
+      padding: 1rem 2rem;
+      gap: 1rem;
+    }
+    .hero-stats { gap: 1.5rem; }
+  }
+
+  /* ============ FOOTER ============ */
+  footer {
+    text-align: center;
+    padding: 3rem 2rem;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    position: relative;
+    z-index: 1;
+  }
+
+  footer p { color: #555; font-size: 0.85rem; }
+  footer a { color: var(--primary); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<!-- 3D DNA HELIX BACKGROUND -->
+<div class="dna-scene" id="dnaScene">
+  <div class="dna-glow"></div>
+  <!-- Helixes are generated by JS -->
+</div>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nav-logo">🧬 <span>Vet</span>Gen Academy</div>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#cursos">Cursos</a></li>
+    <li><a href="#laboratorio">Laboratório</a></li>
+    <li><a href="#quiz">Quiz</a></li>
+    <li><a href="#pacientes">Pacientes</a></li>
+    <li><a href="#genetica">Genética</a></li>
+    <li><a href="#equipe">Equipe</a></li>
+  </ul>
+  <button class="nav-toggle" onclick="document.getElementById('navLinks').classList.toggle('open')">☰</button>
+</nav>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="hero-badge">🔬 Plataforma de Ensino Veterinário</div>
+      <h1>Desvende o <span class="gradient-text">Código Genético</span> Animal</h1>
+      <p>Plataforma interativa de aprendizado em genética veterinária. Explore cursos, pratique no laboratório virtual e teste seus conhecimentos.</p>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <span class="number counter" data-target="2847">0</span>
+          <span class="label">Alunos Ativos</span>
+        </div>
+        <div class="hero-stat">
+          <span class="number counter" data-target="156">0</span>
+          <span class="label">Casos Clínicos</span>
+        </div>
+        <div class="hero-stat">
+          <span class="number counter" data-target="98">0</span>
+          <span class="label">% Aprovação</span>
+        </div>
+        <div class="hero-stat">
+          <span class="number counter" data-target="42">0</span>
+          <span class="label">Especialistas</span>
+        </div>
+      </div>
+    </div>
+    <div class="scroll-indicator" onclick="document.getElementById('cursos').scrollIntoView({behavior:'smooth'})">▼</div>
+  </div>
+
+  <!-- CURSOS -->
+  <section id="cursos">
+    <div class="section-header">
+      <h2>Trilhas de Aprendizado</h2>
+      <p>Cursos desenvolvidos por especialistas em genética veterinária com casos reais</p>
+      <div class="line"></div>
+    </div>
+    <div class="courses-grid">
+      <div class="course-card" onclick="this.querySelector('.card-progress .bar').style.width='75%'">
+        <div class="card-banner gen">🧬<span class="card-level">Avançado</span></div>
+        <div class="card-body">
+          <h3>Genética Molecular Canina</h3>
+          <p>Mapeamento genético, identificação de mutações hereditárias e terapias gênicas em cães de raça.</p>
+          <div class="card-meta"><span class="duration">⏱ 48h</span><span>⭐ 4.9</span></div>
+          <div class="card-progress"><div class="bar" style="width:62%"></div></div>
+        </div>
+      </div>
+      <div class="course-card" onclick="this.querySelector('.card-progress .bar').style.width='90%'">
+        <div class="card-banner nut">🥗<span class="card-level">Intermediário</span></div>
+        <div class="card-body">
+          <h3>Nutrigenômica Felina</h3>
+          <p>Como o perfil genético influencia necessidades nutricionais específicas de gatos domésticos.</p>
+          <div class="card-meta"><span class="duration">⏱ 32h</span><span>⭐ 4.8</span></div>
+          <div class="card-progress"><div class="bar" style="width:45%"></div></div>
+        </div>
+      </div>
+      <div class="course-card" onclick="this.querySelector('.card-progress .bar').style.width='50%'">
+        <div class="card-banner img">🔬<span class="card-level">Básico</span></div>
+        <div class="card-body">
+          <h3>Diagnóstico por Imagem Genética</h3>
+          <p>Uso de PCR, eletroforese e FISH para diagnóstico de doenças genéticas em animais.</p>
+          <div class="card-meta"><span class="duration">⏱ 24h</span><span>⭐ 4.7</span></div>
+          <div class="card-progress"><div class="bar" style="width:20%"></div></div>
+        </div>
+      </div>
+      <div class="course-card" onclick="this.querySelector('.card-progress .bar').style.width='85%'">
+        <div class="card-banner onc">🎯<span class="card-level">Avançado</span></div>
+        <div class="card-body">
+          <h3>Oncogenética Veterinária</h3>
+          <p>Genes supressores tumorais, oncogenes e predisposição genética ao câncer em animais.</p>
+          <div class="card-meta"><span class="duration">⏱ 56h</span><span>⭐ 4.9</span></div>
+          <div class="card-progress"><div class="bar" style="width:33%"></div></div>
+        </div>
+      </div>
+      <div class="course-card" onclick="this.querySelector('.card-progress .bar').style.width='70%'">
+        <div class="card-banner ort">🦴<span class="card-level">Intermediário</span></div>
+        <div class="card-body">
+          <h3>Ortopedia & Genética Equina</h3>
+          <p>Doenças osteoarticulares hereditárias em cavalos: OCD, HYPP e síndrome de Wobbler.</p>
+          <div class="card-meta"><span class="duration">⏱ 40h</span><span>⭐ 4.6</span></div>
+          <div class="card-progress"><div class="bar" style="width:55%"></div></div>
+        </div>
+      </div>
+      <div class="course-card" onclick="this.querySelector('.card-progress .bar').style.width='95%'">
+        <div class="card-banner der">🐾<span class="card-level">Básico</span></div>
+        <div class="card-body">
+          <h3>Dermatogenética Animal</h3>
+          <p>Padrões de pelagem, alopecia hereditária e condições dermatológicas de origem genética.</p>
+          <div class="card-meta"><span class="duration">⏱ 20h</span><span>⭐ 4.8</span></div>
+          <div class="card-progress"><div class="bar" style="width:80%"></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LABORATÓRIO DNA -->
+  <section id="laboratorio">
+    <div class="section-header">
+      <h2>🔬 Laboratório Virtual de DNA</h2>
+      <p>Selecione uma espécie e gere uma sequência de DNA aleatória para análise</p>
+      <div class="line"></div>
+    </div>
+    <div class="dna-lab">
+      <div class="lab-controls">
+        <select class="lab-select" id="speciesSelect">
+          <option value="canino">🐕 Canino (Canis lupus familiaris)</option>
+          <option value="felino">🐈 Felino (Felis catus)</option>
+          <option value="equino">🐎 Equino (Equus caballus)</option>
+          <option value="bovino">🐄 Bovino (Bos taurus)</option>
+          <option value="ave">🦜 Ave (Psittaciformes)</option>
+        </select>
+        <select class="lab-select" id="geneSelect">
+          <option value="mc1r">MC1R - Cor da Pelagem</option>
+          <option value="brca1">BRCA1 - Supressor Tumoral</option>
+          <option value="sod1">SOD1 - Mielopatia Degenerativa</option>
+          <option value="fgf5">FGF5 - Comprimento do Pelo</option>
+          <option value="agouti">ASIP - Padrão Agouti</option>
+        </select>
+        <button class="lab-btn" onclick="generateDNA()">⚡ Gerar Sequência</button>
+      </div>
+      <div class="dna-sequence" id="dnaSequence">
+        <span style="color:#666">Clique em "Gerar Sequência" para começar...</span>
+      </div>
+      <div class="lab-result" id="labResult">
+        <h4 id="resultTitle"></h4>
+        <p id="resultText"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIMELINE -->
+  <section>
+    <div class="section-header">
+      <h2>📅 Cronograma do Semestre</h2>
+      <p>Eventos e marcos importantes do programa de genética veterinária</p>
+      <div class="line"></div>
+    </div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="date">Março 2026</div>
+        <h4>Início das Aulas - Módulo de Biologia Molecular</h4>
+        <p>Abertura do semestre com revisão de conceitos fundamentais de DNA, RNA e síntese proteica.</p>
+      </div>
+      <div class="timeline-item">
+        <div class="date">Abril 2026</div>
+        <h4>Workshop: Técnicas de PCR em Veterinária</h4>
+        <p>Aula prática no laboratório com extração de DNA e amplificação por PCR em tempo real.</p>
+      </div>
+      <div class="timeline-item">
+        <div class="date">Maio 2026</div>
+        <h4>Seminário: Edição Genética com CRISPR</h4>
+        <p>Palestrante convidada: Dra. Ana Beatriz sobre aplicações de CRISPR-Cas9 em veterinária.</p>
+      </div>
+      <div class="timeline-item">
+        <div class="date">Junho 2026</div>
+        <h4>Avaliação Prática + Estudo de Caso</h4>
+        <p>Apresentação de casos clínicos reais envolvendo doenças genéticas em animais de companhia.</p>
+      </div>
+      <div class="timeline-item">
+        <div class="date">Julho 2026</div>
+        <h4>Certificação & Cerimônia de Conclusão</h4>
+        <p>Entrega de certificados e premiação dos melhores trabalhos do semestre.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="quiz">
+    <div class="section-header">
+      <h2>🧠 Quiz de Genética Veterinária</h2>
+      <p>Teste seus conhecimentos com perguntas interativas</p>
+      <div class="line"></div>
+    </div>
+    <div class="quiz-container">
+      <div class="quiz-header">
+        <span class="quiz-progress-text" id="quizProgress">Pergunta 1 de 5</span>
+        <span class="quiz-score" id="quizScore">🏆 0 pts</span>
+      </div>
+      <div class="quiz-question" id="quizQuestion"></div>
+      <div class="quiz-options" id="quizOptions"></div>
+      <div class="quiz-explanation" id="quizExplanation"></div>
+      <button class="quiz-next" id="quizNext" onclick="nextQuestion()">Próxima Pergunta →</button>
+    </div>
+  </section>
+
+  <!-- PACIENTES -->
+  <section id="pacientes">
+    <div class="section-header">
+      <h2>🐾 Prontuários Genéticos</h2>
+      <p>Banco de dados de pacientes com análise genética completa</p>
+      <div class="line"></div>
+    </div>
+    <div class="search-bar">
+      <input class="search-input" id="patientSearch" type="text" placeholder="🔍 Buscar paciente por nome, raça ou tutor..." oninput="filterPatients()">
+      <button class="filter-btn active" onclick="filterByStatus(this,'all')">Todos</button>
+      <button class="filter-btn" onclick="filterByStatus(this,'em-tratamento')">Em Tratamento</button>
+      <button class="filter-btn" onclick="filterByStatus(this,'concluido')">Concluído</button>
+      <button class="filter-btn" onclick="filterByStatus(this,'urgente')">Urgente</button>
+    </div>
+    <div class="patients-table-wrap">
+      <table class="patients-table">
+        <thead><tr>
+          <th>ID</th><th>Paciente</th><th>Espécie / Raça</th><th>Tutor</th><th>Teste Genético</th><th>Status</th><th>Resultado</th>
+        </tr></thead>
+        <tbody id="patientsBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- CALCULADORA GENÉTICA -->
+  <section id="genetica">
+    <div class="section-header">
+      <h2>🧮 Calculadora Punnett</h2>
+      <p>Simule cruzamentos e calcule probabilidades genotípicas</p>
+      <div class="line"></div>
+    </div>
+    <div class="calc-grid">
+      <div class="calc-parent">
+        <h4>🐕 Progenitor 1</h4>
+        <p style="font-size:0.8rem;color:#888;margin-bottom:0.8rem">Insira os dois alelos (ex: B, b)</p>
+        <div class="allele-input">
+          <input type="text" maxlength="1" id="p1a1" value="B" oninput="calculatePunnett()">
+          <input type="text" maxlength="1" id="p1a2" value="b" oninput="calculatePunnett()">
+        </div>
+      </div>
+      <div class="calc-parent">
+        <h4>🐕 Progenitor 2</h4>
+        <p style="font-size:0.8rem;color:#888;margin-bottom:0.8rem">Insira os dois alelos (ex: B, b)</p>
+        <div class="allele-input">
+          <input type="text" maxlength="1" id="p2a1" value="B" oninput="calculatePunnett()">
+          <input type="text" maxlength="1" id="p2a2" value="b" oninput="calculatePunnett()">
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center">
+      <button class="lab-btn" onclick="calculatePunnett()" style="margin-bottom:1.5rem">Calcular Cruzamento</button>
+    </div>
+    <div class="punnett-square" id="punnettSquare"></div>
+    <div class="genotype-results" id="genotypeResults"></div>
+  </section>
+
+  <!-- EQUIPE -->
+  <section id="equipe">
+    <div class="section-header">
+      <h2>👨‍⚕️ Nossa Equipe</h2>
+      <p>Especialistas em genética veterinária e bioinformática</p>
+      <div class="line"></div>
+    </div>
+    <div class="team-grid">
+      <div class="team-card">
+        <div class="team-avatar">DR</div>
+        <h4>Dra. Renata Vieira</h4>
+        <div class="role">Geneticista Veterinária Sênior</div>
+        <div class="bio">PhD em Genética Animal pela USP. 15 anos de experiência em diagnóstico molecular canino.</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar">MC</div>
+        <h4>Dr. Marco Cavalcanti</h4>
+        <div class="role">Bioinformata & Pesquisador</div>
+        <div class="bio">Especialista em sequenciamento NGS e análise de genomas animais completos.</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar">LS</div>
+        <h4>Dra. Luana Santos</h4>
+        <div class="role">Oncologista Veterinária</div>
+        <div class="bio">Pesquisadora em oncogenética felina. Publicou 28 artigos em journals internacionais.</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar">PF</div>
+        <h4>Dr. Paulo Ferreira</h4>
+        <div class="role">Patologista Clínico</div>
+        <div class="bio">Especialista em doenças hereditárias em equinos e desenvolvimento de testes genéticos.</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <p>© 2026 VetGen Academy — Plataforma de Ensino em Genética Veterinária | Desenvolvido com 🧬 por VetGen Labs</p>
+</footer>
+
+<script>
+// ============ 3D ROTATING DNA HELIX GENERATOR ============
+(function() {
+  const scene = document.getElementById('dnaScene');
+  const basePairs = ['A-T','T-A','G-C','C-G'];
+  const baseColors = { A:'#00b894', T:'#fd79a8', G:'#fdcb6e', C:'#6c5ce7' };
+
+  function createHelix(config) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'dna-helix-wrapper ' + config.cls;
+
+    const helix = document.createElement('div');
+    helix.className = 'dna-helix';
+
+    const rungs = config.rungs || 30;
+    const spacing = config.spacing || 28;
+    const radius = config.radius || 90;
+    const totalHeight = rungs * spacing;
+    const halfH = totalHeight / 2;
+
+    for (let i = 0; i < rungs; i++) {
+      const y = i * spacing - halfH;
+      const angle = (i / rungs) * Math.PI * 4; // 2 full twists
+      const z1 = Math.cos(angle) * radius;
+      const x1 = Math.sin(angle) * radius;
+      const z2 = Math.cos(angle + Math.PI) * radius;
+      const x2 = Math.sin(angle + Math.PI) * radius;
+
+      const pair = basePairs[i % 4];
+      const baseA = pair[0];
+      const baseB = pair[2];
+
+      // Strand A ball
+      const ballA = document.createElement('div');
+      ballA.className = 'dna-ball strand-a';
+      ballA.style.transform = `translate3d(${x1}px, ${y}px, ${z1}px)`;
+      helix.appendChild(ballA);
+
+      // Strand B ball
+      const ballB = document.createElement('div');
+      ballB.className = 'dna-ball strand-b';
+      ballB.style.transform = `translate3d(${x2}px, ${y}px, ${z2}px)`;
+      helix.appendChild(ballB);
+
+      // Connector between strands
+      const dx = x2 - x1;
+      const dz = z2 - z1;
+      const dist = Math.sqrt(dx*dx + dz*dz);
+      const angleConn = Math.atan2(0, dx) * 180 / Math.PI;
+
+      const conn = document.createElement('div');
+      conn.className = 'dna-connector';
+      conn.style.width = dist + 'px';
+      conn.style.transform = `translate3d(${x1}px, ${y}px, ${(z1+z2)/2}px) rotateY(${-angle * 180 / Math.PI}deg)`;
+      helix.appendChild(conn);
+
+      // Base pair labels (only on center helix)
+      if (config.cls === 'center' && i % 2 === 0) {
+        const labelA = document.createElement('div');
+        labelA.className = 'dna-label base-' + baseA;
+        labelA.textContent = baseA;
+        labelA.style.transform = `translate3d(${x1*0.65}px, ${y}px, ${z1*0.65}px)`;
+        helix.appendChild(labelA);
+
+        const labelB = document.createElement('div');
+        labelB.className = 'dna-label base-' + baseB;
+        labelB.textContent = baseB;
+        labelB.style.transform = `translate3d(${x2*0.65}px, ${y}px, ${z2*0.65}px)`;
+        helix.appendChild(labelB);
+      }
+    }
+
+    wrapper.appendChild(helix);
+    scene.appendChild(wrapper);
+  }
+
+  // Center helix (main, large)
+  createHelix({ cls: 'center', rungs: 36, spacing: 26, radius: 100 });
+  // Side helixes (smaller, decorative)
+  createHelix({ cls: 'left', rungs: 28, spacing: 24, radius: 80 });
+  createHelix({ cls: 'right', rungs: 26, spacing: 22, radius: 75 });
+  createHelix({ cls: 'far-left', rungs: 20, spacing: 20, radius: 60 });
+  createHelix({ cls: 'far-right', rungs: 22, spacing: 22, radius: 65 });
+
+  // Ambient floating particles
+  const pColors = ['#00b89440','#6c5ce740','#fd79a840','#fdcb6e40','#00cec940'];
+  for (let i = 0; i < 40; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = 2 + Math.random() * 4;
+    const x = Math.random() * 100;
+    const dur = 20 + Math.random() * 30;
+    const delay = Math.random() * dur;
+    const color = pColors[Math.floor(Math.random() * pColors.length)];
+    p.style.cssText = `
+      left: ${x}%;
+      width: ${size}px;
+      height: ${size}px;
+      background: ${color};
+      box-shadow: 0 0 ${size*3}px ${color};
+      animation-duration: ${dur}s;
+      animation-delay: -${delay}s;
+    `;
+    scene.appendChild(p);
+  }
+})();
+
+// ============ COUNTER ANIMATION ============
+const counters = document.querySelectorAll('.counter');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const el = entry.target;
+      const target = +el.dataset.target;
+      let current = 0;
+      const step = target / 60;
+      const timer = setInterval(() => {
+        current += step;
+        if (current >= target) { current = target; clearInterval(timer); }
+        el.textContent = Math.round(current).toLocaleString();
+      }, 25);
+      observer.unobserve(el);
+    }
+  });
+}, { threshold: 0.5 });
+counters.forEach(c => observer.observe(c));
+
+// ============ DNA LAB ============
+const geneInfo = {
+  mc1r: {
+    canino: { title: "MC1R em Canis lupus familiaris", text: "O gene MC1R controla a produção de eumelanina vs feomelanina. Mutações causam pelagem amarela/vermelha no Labrador e Golden Retriever. A variante e/e resulta em fenótipo recessivo amarelo." },
+    felino: { title: "MC1R em Felis catus", text: "Variantes do MC1R em gatos estão associadas à cor âmbar no Norwegian Forest Cat. A mutação c.250G>A altera a sinalização do receptor, resultando em pigmentação diferenciada." },
+    equino: { title: "MC1R em Equus caballus", text: "O alelo 'e' do MC1R em cavalos resulta na pelagem castanha (chestnut). Cavalos e/e não produzem eumelanina suficiente. É um dos genes mais testados em genética equina." },
+    bovino: { title: "MC1R em Bos taurus", text: "Em bovinos, o MC1R determina padrões de cor na raça Holstein. O alelo ED (dominante negro) suprime a feomelanina. Raças como Angus carregam ED/ED." },
+    ave: { title: "MC1R em Psittaciformes", text: "Em aves psitacídeas, o MC1R influencia deposição de melanina nas penas. Mutações resultam em variantes lutinas (amarelas) ou albinas." }
+  },
+  brca1: {
+    canino: { title: "BRCA1 Canino", text: "Deleções no exon 11 estão associadas a tumores mamários em fêmeas não castradas, especialmente em Springer Spaniels e Cocker Spaniels. A detecção precoce permite ovariohisterectomia preventiva." },
+    felino: { title: "BRCA1 Felino", text: "Gatos com variantes de BRCA1 apresentam risco elevado de carcinoma mamário. A análise genética ajuda no prognóstico e na escolha do protocolo quimioterápico." },
+    equino: { title: "BRCA1 Equino", text: "Homólogos de BRCA1 em equinos estão associados a melanomas dérmicos, especialmente em cavalos tordilhos. A expressão reduzida correlaciona-se com progressão tumoral." },
+    bovino: { title: "BRCA1 Bovino", text: "Em bovinos, BRCA1 é estudado no contexto de fertilidade. Variantes podem afetar a taxa de concepção e sobrevivência embrionária precoce." },
+    ave: { title: "BRCA1 em Aves", text: "O homólogo de BRCA1 em aves participa do reparo de DNA. A integridade deste gene é importante na resistência a papilomavírus aviário." }
+  },
+  sod1: {
+    canino: { title: "SOD1 - Mielopatia Degenerativa Canina", text: "A mutação SOD1:c.118G>A causa mielopatia degenerativa, análoga à ELA em humanos. Raças predispostas: Pastor Alemão, Corgi, Boxer. Homozigotos A/A têm risco elevado." },
+    felino: { title: "SOD1 Felino", text: "Variantes de SOD1 foram identificadas em felinos com neuropatias periféricas progressivas. O monitoramento genético é recomendado em linhagens afetadas." },
+    equino: { title: "SOD1 Equino", text: "Em cavalos, SOD1 está envolvido na proteção contra estresse oxidativo muscular. Variantes podem predispor a miopatias pós-exercício em Thoroughbreds." },
+    bovino: { title: "SOD1 Bovino", text: "SOD1 em bovinos está associado à resistência ao estresse térmico. Raças zebuínas apresentam variantes com maior atividade enzimática." },
+    ave: { title: "SOD1 em Aves", text: "Em aves, SOD1 é fundamental na defesa antioxidante. Psitacídeos com baixa expressão são mais suscetíveis a toxicidade por metais pesados." }
+  },
+  fgf5: {
+    canino: { title: "FGF5 - Pelo Canino", text: "A mutação c.284G>T resulta em pelo longo. Yorkshire e Shih Tzu são homozigotas para o alelo longo. O teste é usado em programas de criação." },
+    felino: { title: "FGF5 Felino", text: "Pelo menos 4 mutações independentes no FGF5 causam pelagem longa em gatos. Persa e Maine Coon carregam variantes distintas." },
+    equino: { title: "FGF5 Equino", text: "Variantes de FGF5 em cavalos estão associadas à densidade da crina e cauda. Frísios possuem pelagem abundante devido a menor atividade de FGF5." },
+    bovino: { title: "FGF5 Bovino", text: "Em bovinos, FGF5 influencia a espessura da pelagem invernal. Raças escocesas como Highland possuem pelagem longa associada a variantes específicas." },
+    ave: { title: "FGF5 em Aves", text: "O homólogo de FGF5 em aves participa do desenvolvimento das penas de contorno. Variantes podem afetar a muda e crescimento das penas." }
+  },
+  agouti: {
+    canino: { title: "ASIP (Agouti) Canino", text: "O alelo 'ay' causa sable (dominante), 'at' causa tan points (Rottweilers). O alelo 'a' (recessivo negro) resulta em pelagem uniformemente escura." },
+    felino: { title: "ASIP Felino", text: "O padrão agouti cria o efeito tabby com bandas alternadas. Gatos não-agouti (a/a) apresentam pelagem sólida. ASIP interage com Tabby para determinar listras." },
+    equino: { title: "ASIP Equino", text: "O ASIP em cavalos restringe a eumelanina aos pontos, criando o fenótipo baio. Cavalos a/a são uniformemente pretos." },
+    bovino: { title: "ASIP Bovino", text: "Variantes de ASIP influenciam padrões de cor racial. A interação ASIP-MC1R determina fenótipos como pelagem vermelha do Hereford." },
+    ave: { title: "ASIP em Aves", text: "O ASIP homólogo influencia distribuição de melaninas nas penas, criando padrões selvagem vs mutações de cor como verde-escuro e oliva." }
+  }
+};
+
+function generateDNA() {
+  const species = document.getElementById('speciesSelect').value;
+  const gene = document.getElementById('geneSelect').value;
+  const bases = ['A','T','G','C'];
+  const len = 40 + Math.floor(Math.random()*20);
+  let html = '';
+  for (let i = 0; i < len; i++) {
+    const b = bases[Math.floor(Math.random()*4)];
+    html += '<span class="base-'+b+'" style="animation-delay:'+i*0.02+'s">'+b+'</span>';
+    if ((i+1) % 10 === 0 && i < len-1) html += '<span style="color:#333"> | </span>';
+  }
+  document.getElementById('dnaSequence').innerHTML = html;
+  const info = geneInfo[gene][species];
+  document.getElementById('resultTitle').textContent = info.title;
+  document.getElementById('resultText').textContent = info.text;
+  document.getElementById('labResult').classList.add('show');
+}
+
+// ============ QUIZ ============
+const quizData = [
+  { q:"Qual técnica amplifica segmentos específicos de DNA para diagnóstico genético veterinário?", opts:["Eletroforese em gel","PCR (Reação em Cadeia da Polimerase)","Western Blot","Cromatografia HPLC"], correct:1, explain:"A PCR permite amplificar milhões de cópias de um segmento de DNA a partir de amostra mínima, sendo a técnica mais usada em diagnóstico genético veterinário." },
+  { q:"A Displasia Coxofemoral em cães possui herança do tipo:", opts:["Autossômica dominante simples","Ligada ao cromossomo X","Poligênica multifatorial","Mitocondrial materna"], correct:2, explain:"A displasia coxofemoral é poligênica multifatorial — vários genes contribuem, junto com fatores ambientais como nutrição e exercício." },
+  { q:"O que significa um animal ser 'portador' de uma doença autossômica recessiva?", opts:["Apresenta sintomas leves","É homozigoto dominante (AA)","É heterozigoto (Aa) sem manifestar a doença","É imune à doença"], correct:2, explain:"Um portador é heterozigoto (Aa): carrega um alelo normal e um mutante. Não manifesta a doença, mas transmite o alelo recessivo para 50% da prole." },
+  { q:"Qual sistema de edição genética revolucionou a medicina veterinária por sua precisão?", opts:["TALEN","Zinc Finger Nuclease","CRISPR-Cas9","Recombinação homóloga clássica"], correct:2, explain:"O CRISPR-Cas9 permite editar DNA com alta precisão usando um RNA-guia. Em veterinária, é usado para pesquisar resistência a doenças e terapias gênicas." },
+  { q:"Em um cruzamento Bb x Bb, qual a probabilidade de filhotes homozigotos recessivos (bb)?", opts:["0%","25%","50%","75%"], correct:1, explain:"No quadrado de Punnett: BB (25%), Bb (50%), bb (25%). Portanto, 25% da prole será homozigota recessiva (bb)." }
+];
+
+let currentQ=0, score=0, answered=false;
+
+function loadQuestion() {
+  const q=quizData[currentQ];
+  document.getElementById('quizProgress').textContent='Pergunta '+(currentQ+1)+' de '+quizData.length;
+  document.getElementById('quizQuestion').textContent=q.q;
+  const od=document.getElementById('quizOptions'); od.innerHTML='';
+  ['A','B','C','D'].forEach((l,i)=>{
+    const d=document.createElement('div');
+    d.className='quiz-option';
+    d.innerHTML='<span class="letter">'+l+'</span><span>'+q.opts[i]+'</span>';
+    d.onclick=()=>selectAnswer(i);
+    od.appendChild(d);
+  });
+  document.getElementById('quizExplanation').classList.remove('show');
+  document.getElementById('quizNext').classList.remove('show');
+  answered=false;
+}
+
+function selectAnswer(idx) {
+  if(answered)return; answered=true;
+  const q=quizData[currentQ];
+  const opts=document.querySelectorAll('.quiz-option');
+  opts[q.correct].classList.add('correct');
+  if(idx!==q.correct) opts[idx].classList.add('wrong');
+  else { score+=20; document.getElementById('quizScore').textContent='🏆 '+score+' pts'; }
+  const ex=document.getElementById('quizExplanation');
+  ex.innerHTML='<strong>'+(idx===q.correct?'✅ Correto!':'❌ Incorreto.')+'</strong> '+q.explain;
+  ex.classList.add('show');
+  const btn=document.getElementById('quizNext');
+  btn.classList.add('show');
+  btn.textContent=currentQ<quizData.length-1?'Próxima Pergunta →':'🎉 Ver Resultado Final';
+}
+
+function nextQuestion() {
+  currentQ++;
+  if(currentQ<quizData.length) loadQuestion();
+  else {
+    const c=document.querySelector('.quiz-container');
+    let msg=score>=80?'🏆 Excelente! Você domina genética veterinária!':score>=60?'👏 Bom trabalho! Continue estudando.':'📚 Continue se dedicando! Revise o material.';
+    c.innerHTML='<div style="text-align:center;padding:2rem"><h2 style="font-size:3rem;margin-bottom:1rem">'+score+'/100</h2><p style="font-size:1.2rem;color:#bbb;margin-bottom:1rem">'+msg+'</p><button class="lab-btn" onclick="location.reload()">🔄 Recomeçar Quiz</button></div>';
+  }
+}
+loadQuestion();
+
+// ============ PATIENTS ============
+const patients = [
+  {id:'VG-2847',name:'🐕 Thor',breed:'Canino / Pastor Alemão',tutor:'Carlos Mendes',test:'SOD1 - Mielopatia',status:'em-tratamento',statusLabel:'Em Tratamento',result:'A/A (Afetado)'},
+  {id:'VG-2848',name:'🐈 Luna',breed:'Felino / Persa',tutor:'Maria Oliveira',test:'PKD1 - Rins Policísticos',status:'concluido',statusLabel:'Concluído',result:'C/+ (Portador)'},
+  {id:'VG-2849',name:'🐕 Max',breed:'Canino / Labrador',tutor:'João Silva',test:'EIC - Colapso Induzido',status:'aguardando',statusLabel:'Aguardando',result:'Pendente'},
+  {id:'VG-2850',name:'🐎 Estrela',breed:'Equino / Quarto de Milha',tutor:'Fazenda Boa Vista',test:'HYPP - Paralisia',status:'urgente',statusLabel:'Urgente',result:'H/N (Heterozigoto)'},
+  {id:'VG-2851',name:'🐕 Bella',breed:'Canino / Golden Retriever',tutor:'Ana Beatriz',test:'PRA - Atrofia Retiniana',status:'concluido',statusLabel:'Concluído',result:'N/N (Normal)'},
+  {id:'VG-2852',name:'🐈 Simba',breed:'Felino / Maine Coon',tutor:'Pedro Santos',test:'HCM - Cardiomiopatia',status:'em-tratamento',statusLabel:'Em Tratamento',result:'A31P/+ (Afetado)'},
+  {id:'VG-2853',name:'🦜 Kiwi',breed:'Ave / Calopsita',tutor:'Lucia Ferreira',test:'PBFD - Doença do Bico',status:'aguardando',statusLabel:'Aguardando',result:'Pendente'},
+  {id:'VG-2854',name:'🐕 Zeus',breed:'Canino / Boxer',tutor:'Roberto Lima',test:'DM - Mielopatia',status:'urgente',statusLabel:'Urgente',result:'A/A (Afetado)'},
+  {id:'VG-2855',name:'🐄 Mimosa',breed:'Bovino / Holandesa',tutor:'Fazenda Sol Nascente',test:'BLAD - Deficiência LAD',status:'concluido',statusLabel:'Concluído',result:'N/N (Normal)'},
+  {id:'VG-2856',name:'🐈 Nina',breed:'Felino / Siamês',tutor:'Carla Nunes',test:'GM1 - Gangliosidose',status:'em-tratamento',statusLabel:'Em Tratamento',result:'G/+ (Portador)'}
+];
+
+let currentFilter='all';
+
+function renderPatients(data) {
+  document.getElementById('patientsBody').innerHTML=data.map(p=>'<tr><td style="font-weight:600;color:var(--primary)">'+p.id+'</td><td style="font-weight:600;color:var(--text-bright)">'+p.name+'</td><td>'+p.breed+'</td><td>'+p.tutor+'</td><td>'+p.test+'</td><td><span class="status-badge '+p.status+'">'+p.statusLabel+'</span></td><td style="font-weight:600">'+p.result+'</td></tr>').join('');
+}
+
+function filterPatients() {
+  const s=document.getElementById('patientSearch').value.toLowerCase();
+  let f=patients.filter(p=>p.name.toLowerCase().includes(s)||p.breed.toLowerCase().includes(s)||p.tutor.toLowerCase().includes(s)||p.test.toLowerCase().includes(s));
+  if(currentFilter!=='all') f=f.filter(p=>p.status===currentFilter);
+  renderPatients(f);
+}
+
+function filterByStatus(btn,status) {
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter=status;
+  filterPatients();
+}
+
+renderPatients(patients);
+
+// ============ PUNNETT CALCULATOR ============
+function calculatePunnett() {
+  const a1=document.getElementById('p1a1').value||'?';
+  const a2=document.getElementById('p1a2').value||'?';
+  const b1=document.getElementById('p2a1').value||'?';
+  const b2=document.getElementById('p2a2').value||'?';
+
+  document.getElementById('punnettSquare').innerHTML=
+    '<div class="punnett-cell punnett-empty"></div><div class="punnett-cell punnett-header">'+b1+'</div><div class="punnett-cell punnett-header">'+b2+'</div>'+
+    '<div class="punnett-cell punnett-header">'+a1+'</div><div class="punnett-cell punnett-result">'+a1+b1+'</div><div class="punnett-cell punnett-result">'+a1+b2+'</div>'+
+    '<div class="punnett-cell punnett-header">'+a2+'</div><div class="punnett-cell punnett-result">'+a2+b1+'</div><div class="punnett-cell punnett-result">'+a2+b2+'</div>';
+
+  const genotypes={};
+  [a1+b1,a1+b2,a2+b1,a2+b2].forEach(g=>{
+    const s=g.split('').sort().join('');
+    genotypes[s]=(genotypes[s]||0)+1;
+  });
+
+  document.getElementById('genotypeResults').innerHTML=Object.entries(genotypes).map(([g,c])=>{
+    const pct=c/4*100;
+    const isU=g[0]===g[0].toUpperCase()&&g[1]===g[1].toUpperCase();
+    const isL=g[0]===g[0].toLowerCase()&&g[1]===g[1].toLowerCase();
+    const cls=isU?'dominant':isL?'recessive':'heterozygous';
+    const label=isU?'Homozigoto Dominante':isL?'Homozigoto Recessivo':'Heterozigoto';
+    return '<div class="genotype-chip '+cls+'">'+g+' — '+pct+'% ('+label+')</div>';
+  }).join('');
+}
+calculatePunnett();
+
+// ============ SMOOTH SCROLL ============
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',function(e){
+    e.preventDefault();
+    const t=document.querySelector(this.getAttribute('href'));
+    if(t)t.scrollIntoView({behavior:'smooth',block:'start'});
+    document.getElementById('navLinks').classList.remove('open');
+  });
+});
+</script>
+</body>
+</html>
